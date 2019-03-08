@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-footer',
@@ -7,7 +7,13 @@ import { Component, OnInit } from '@angular/core';
 })
 export class FooterComponent implements OnInit {
 
-  constructor() { }
+  constructor(private el: ElementRef) { }
+
+  @ViewChild('card') private cardElement: ElementRef;
+
+  ngAfterViewInit() {
+    console.log(this.cardElement.nativeElement);
+  }
 
   ngOnInit() {
   }

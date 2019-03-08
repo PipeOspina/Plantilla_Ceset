@@ -7,6 +7,8 @@ import { Router } from '@angular/router';
 import { ActivityService } from '../../servicios/activity.service';
 import { AcademicActivity, createNewActivity } from '../../modelos/academicActivity';
 import * as XLSX from 'xlsx';
+import { FooterComponent } from '../footer/footer.component';
+import { RoleComponent } from '../role/role.component';
 
 @Component({
   selector: 'app-inicio',
@@ -67,6 +69,7 @@ export class InicioComponent implements OnInit {
     this.hideActivityList = true;
     this.hideCohortList = true;
     this.hideOther = true;
+    console.log();
   }
 
   toggleNotification() {
@@ -126,6 +129,11 @@ export class InicioComponent implements OnInit {
 
   ngOnDestroy(): void {
     this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+  goToStart(drawer?) {
+    this.router.navigate(['inicio']);
+    drawer ? this.toggleDrawer(drawer) : null;
   }
 
   onFileChange(evt: any) {
