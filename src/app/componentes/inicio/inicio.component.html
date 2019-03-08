@@ -16,7 +16,7 @@
         </button>
         <h1 class="tittle">CESET</h1>
         <button class="notification" (click)="toggleNotification()" mat-icon-button><mat-icon>notifications</mat-icon></button>
-        <button class="logout" mat-raised-button>Cerrar Sesión</button>
+        <button class="logout" (click)="this.loginService.logout()" mat-raised-button>Cerrar Sesión</button>
     </mat-toolbar>
     <div class="notification-card" *ngIf="openedNotification">
         <app-notification-card></app-notification-card>

@@ -17,8 +17,8 @@ export class PersonService {
     return this.restangular.one('person', id).get();
   }
 
-  create(person) {
-    this.restangular
+  create(person): Observable<any>{
+    return this.restangular
     .all('persona')
     .post(person);
   }

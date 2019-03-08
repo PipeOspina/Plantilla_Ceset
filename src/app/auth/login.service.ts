@@ -18,6 +18,7 @@ import { Token } from '../modelos/token';
 import {TOKEN_NAME, NOMBRE_USUARIO, ID_USUARIO, NOMBRE_COMPLETO_USUARIO, IDENTIFICACION_USUARIO, ROL_USUARIO } from '../comun/constantes';
 import { RolService } from '../servicios/rol.service';
 import { Role } from '../modelos/role';
+import { Permission } from '../modelos/permission';
 
 @Injectable()
 export class LoginService {
@@ -40,9 +41,28 @@ export class LoginService {
   obtenerRol(): any {
     return this.rol;
   }
-  actualizarRol(roles: Role[]) {
+  actualizarRol(roles: Array<{ idRole: Role[] }>) {
     //Hacer validación en caso de que el usuario no cuente con roles.
-    this.rolService.sessionRoles = roles;
+    const auxRoles = [];
+    roles.forEach(role => {
+      auxRoles.push(role.idRole);
+    })
+
+    this.rolService.getPermissions(auxRoles)
+    .subscribe( res => {
+      console.log(res);
+      res.forEach(permission => {
+        if(permission.idPermission) {
+          this.rolService.permissions.forEach(auxPermission => {
+            auxPermission.idPermissison == permission.idPermission ?
+            null : this.rolService.permissions.push(permission);
+          });
+        }
+      })
+    }, err => {
+      console.log(err);
+    });
+    console.log(this.rolService.permissions);
   }
 
   //
@@ -65,15 +85,18 @@ export class LoginService {
     localStorage.setItem(NOMBRE_COMPLETO_USUARIO, token.nom);
     localStorage.setItem(IDENTIFICACION_USUARIO, token.ide);
     localStorage.setItem(ID_USUARIO, token.sub);
-    console.log(parseao.rolebyuserCollection);
     this.actualizarRol(parseao.rolebyuserCollection);
     this.setTokenJWT(tokenString);
-
   }
 
   obtenerTokenJWT(): string {
     console.log(localStorage.getItem(TOKEN_NAME));
     return localStorage.getItem(TOKEN_NAME);
+  }
+
+  logout() {
+    localStorage.clear();
+    this.router.navigate(['login']);
   }
 
   setTokenJWT(token: string): void {

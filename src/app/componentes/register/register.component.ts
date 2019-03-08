@@ -140,7 +140,12 @@ export class RegisterComponent implements OnInit {
       }
     }
     
-    this.personService.create(user);
+    this.personService.create(user)
+      .subscribe(res => {
+        this.router.navigate(['login']);
+      }, err => {
+        console.log(`Error status: ${err.status} - ${err.message}`);
+      });
     this.submited = false;
   }
 

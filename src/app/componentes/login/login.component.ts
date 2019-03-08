@@ -85,13 +85,29 @@ export class LoginComponent implements OnInit {
     
     this.userService.getAuth(user)
     .subscribe(res => {
-      if(res.status != 403) {
+      if(!res.status) {
         this.loginService.guardarDatosUsuario(res.token);
         this.router.navigate(['/inicio']);
       } else {
-        this.credentialError = {status: 403, message: 'Email y/o contraseña no concuerdan'}
+        this.credentialError = {status: res.status, message: 'Email y/o contraseña no concuerdan'};
+        console.log(`Error status: ${res.status} - ${res.message}`);
+        console.log(res);
       }
     }, err => {
+      switch(err.status) {
+        case 0:
+          console.log(`No hay respuesta del servidor - error status: ${err.status}`);
+          break;
+        case 400:
+          console.log(`Pagina no encontrada - error status: ${err.status}`);
+          break;
+        case 403:
+          console.log(`Credenciales no concuerdan - Desde el error status: ${err.status}`);
+          break;
+        default:
+          console.log(`Error status: ${err.status}`);
+          break;
+      }
       this.credentialError = {status: err.status, message: 'Email y/o contraseña no concuerdan'}
       this.form.controls['pass'].setValue('');
     });

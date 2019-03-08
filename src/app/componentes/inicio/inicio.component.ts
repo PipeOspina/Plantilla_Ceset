@@ -67,14 +67,6 @@ export class InicioComponent implements OnInit {
     this.hideActivityList = true;
     this.hideCohortList = true;
     this.hideOther = true;
-
-    console.log(this.rolSs.sessionRoles);
-    this.rolSs.getPermissions(this.rolSs.sessionRoles)
-      .subscribe( res => {
-        console.log(res);
-      }, err => {
-        console.log(err);
-      });
   }
 
   toggleNotification() {
