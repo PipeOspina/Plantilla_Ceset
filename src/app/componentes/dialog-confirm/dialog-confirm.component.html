@@ -1,6 +1,6 @@
 <h3>{{data.title}}</h3>
 <mat-divider></mat-divider>
-<p>{{data.message}}</p>
+<p [innerHTML]="data.message"></p>
 
 <div [ngClass]="{ 'buttons': data.type, 'okBtn': !data.type }">
   <button mat-raised-button color="warn" (click)="close(false)" *ngIf="data.type">No</button>

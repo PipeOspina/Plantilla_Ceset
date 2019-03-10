@@ -8,6 +8,8 @@ import { ID_TYPES, Userer } from '../../modelos/user';
 import { Person } from '../../modelos/person';
 import { PersonService } from '../../servicios/person.service';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material';
+import { DialogConfirmComponent, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-register',
@@ -15,7 +17,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent implements OnInit {
-  constructor(private personService: PersonService, private router: Router) { }
+  constructor(private personService: PersonService, private router: Router, private dialog: MatDialog) { }
 
   rol: Rol = new Rol();
 
@@ -142,7 +144,16 @@ export class RegisterComponent implements OnInit {
     
     this.personService.create(user)
       .subscribe(res => {
-        this.router.navigate(['login']);
+        const dialogRef = this.dialog.open(DialogConfirmComponent, {
+          data: {
+            title: `Registro Exitoso`,
+            message: `Se ha registrado exitosamente al usuario <b>${this.form.controls.name.value} ${this.form.controls.lastName.value}</b>, se enviará un email de verificacion a <a href="mailto:${this.form.controls.email.value}">${this.form.controls.email.value}</a>`,
+            type: OK_DIALOG
+          }
+        });
+        dialogRef.afterClosed().subscribe(res => {
+          this.router.navigate(['login']);
+        }); 
       }, err => {
         console.log(`Error status: ${err.status} - ${err.message}`);
       });
