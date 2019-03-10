@@ -5,3 +5,7 @@
 .buttons > * {
     width: 48%;
 }
+
+.okBtn > * {
+    width: 100%;
+}

@@ -1,8 +1,8 @@
-<h3>{{title}}</h3>
+<h3>{{data.title}}</h3>
 <mat-divider></mat-divider>
-<p>{{message}}</p>
+<p>{{data.message}}</p>
 
-<div class="buttons">
-  <button mat-raised-button color="warn" (click)="close()">No</button>
-  <button mat-raised-button color="primary">Si</button>
+<div [ngClass]="{ 'buttons': data.type, 'okBtn': !data.type }">
+  <button mat-raised-button color="warn" (click)="close(false)" *ngIf="data.type">No</button>
+  <button mat-raised-button color="primary" (click)="close(true)">{{this.acceptBtn}}</button>
 </div>

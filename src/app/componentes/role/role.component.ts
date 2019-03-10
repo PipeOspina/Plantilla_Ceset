@@ -8,7 +8,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { User, createNewUser, ID_TYPES } from '../../modelos/user';
 import { Role, ROLES } from '../../modelos/role';
 import { DialogBudgetItemComponent } from '../dialog-budget-item/dialog-budget-item.component';
-import { DialogConfirmComponent } from '../dialog-confirm/dialog-confirm.component';
+import { DialogConfirmComponent, YES_NO_DIALOG, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-role',
@@ -74,7 +74,23 @@ export class RoleComponent implements OnInit {
 
   openDialog() {
     let dialogRef = this.dialog.open(DialogConfirmComponent, {
-      data: {}
+      data: {
+        message: `Esta seguro que desea eliminar al usuario ${this.form.controls.name.value} ${this.form.controls.lastName.value}`,
+        type: YES_NO_DIALOG,
+        title: 'Eliminar Usuario'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(res => {
+      res ? this.dialog.open(DialogConfirmComponent, {
+        data: {
+          title: `Usuario Eliminado`,
+          message: `El usuario ${this.form.controls.name.value} ${this.form.controls.lastName.value} se eliminará pronto`,
+          type: OK_DIALOG
+        }
+      }) : '';
+    }, err => {
+      console.log(err);
     });
   }
 
