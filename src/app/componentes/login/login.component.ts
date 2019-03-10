@@ -6,6 +6,9 @@ import { UserService } from '../../servicios/user.service';
 import { LoginService } from '../../auth/login.service';
 import { AuthUser } from '../../modelos/user';
 import { RolService } from '../../servicios/rol.service';
+import { MatDialog } from '@angular/material';
+import { DialogConfirmComponent, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
+import { NOMBRE_USUARIO } from '../../comun/constantes';
 
 @Component({
   selector: 'app-login',
@@ -31,7 +34,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private userService: UserService,
     private router: Router,
-    private loginService : LoginService
+    private loginService : LoginService,
+    private dialog: MatDialog
   ) { }
 
   //Mensaje tipo PopUp en el boton de inicio (cuando está inhabilitado)
@@ -45,6 +49,36 @@ export class LoginComponent implements OnInit {
                 passControl.hasError('required') ? 'El campo "Contraseña" es requerido' :
                 !this.captchaResolved ? 'Comprueba que eres humano' : '';
     return msg;
+  }
+
+  errorResponse(err) {
+    switch(err.status) {
+      case 0:
+        this.openDialog('Sin Respuesta del Servidor',
+                        'El servidor no está respondiendo en este momento, ' +
+                          'intente su ingreso mas tarde y si el error persiste, ' +
+                          'favor comunicarlo a soporte técnico',
+                        OK_DIALOG);
+        break;
+      case 400:
+      this.openDialog('Recurso no Encontrado',
+                      'El recurso requerido no se ha podido encontrar, ' +
+                        'intente su ingreso mas tarde y si el error persiste, ' +
+                        'favor comunicarlo a soporte técnico',
+                      OK_DIALOG);
+        break;
+      case 403:
+        this.credentialError = {status: err.status, message: 'Email y/o contraseña no concuerdan'}
+        break;
+      default:
+      this.openDialog('Error Irreconocible',
+                      `El servidor entrega un error no mapeado de status <b>${err.status}</b>, ` +
+                        'intente su ingreso mas tarde y si el error persiste, ' +
+                        'favor comunicarlo a soporte técnico',
+                      OK_DIALOG);
+        break;
+    }
+    this.form.controls.pass.setValue('');
   }
 
   //Mensaje sí el campo email del form tiene algun error
@@ -65,7 +99,7 @@ export class LoginComponent implements OnInit {
   }
 
   goToRegister() {
-     this.router.navigateByUrl('/registro');
+     this.router.navigate(['registro']);
   }
 
   //Cambia el color del icono (ocultar/ver) de pass, sí hay un error
@@ -73,7 +107,20 @@ export class LoginComponent implements OnInit {
     return this.form.controls['pass'].invalid && this.blur ? 'warn' : '';
   }
 
-  ngOnInit() { }
+  ngOnInit() {
+    localStorage.getItem(NOMBRE_USUARIO) ? this.router.navigate(['inicio']) : null;
+  }
+
+  okResponse(res) {
+    if(!res.status) {
+      this.loginService.guardarDatosUsuario(res.token);
+      this.router.navigate(['/inicio']);
+    } else {
+      this.credentialError = {status: res.status, message: 'Email y/o contraseña no concuerdan'};
+      console.log(`Error status: ${res.status} - ${res.message}`);
+      console.log(res);
+    }
+  }
 
   onSubmit() {
     const form = this.form.controls;
@@ -85,32 +132,27 @@ export class LoginComponent implements OnInit {
     
     this.userService.getAuth(user)
     .subscribe(res => {
-      if(!res.status) {
-        this.loginService.guardarDatosUsuario(res.token);
-        this.router.navigate(['/inicio']);
-      } else {
-        this.credentialError = {status: res.status, message: 'Email y/o contraseña no concuerdan'};
-        console.log(`Error status: ${res.status} - ${res.message}`);
-        console.log(res);
-      }
+      this.okResponse(res);
     }, err => {
-      switch(err.status) {
-        case 0:
-          console.log(`No hay respuesta del servidor - error status: ${err.status}`);
-          break;
-        case 400:
-          console.log(`Pagina no encontrada - error status: ${err.status}`);
-          break;
-        case 403:
-          console.log(`Credenciales no concuerdan - Desde el error status: ${err.status}`);
-          break;
-        default:
-          console.log(`Error status: ${err.status}`);
-          break;
-      }
-      this.credentialError = {status: err.status, message: 'Email y/o contraseña no concuerdan'}
-      this.form.controls['pass'].setValue('');
+      this.errorResponse(err);
     });
+  }
+
+  openDialog(title, msg, type) { 
+    const dialogRef = this.dialog.open(DialogConfirmComponent, {
+      data: {
+        title: title,
+        message: msg,
+        type: type
+      }
+    });
+    let response;
+    dialogRef.afterClosed().subscribe(res => {
+      response = res;
+    }, err => {
+      response = err;
+    });
+    return response;
   }
 
   //Se borra el mensaje de error (credentialError) cuando se digita nuevamente en los inputs

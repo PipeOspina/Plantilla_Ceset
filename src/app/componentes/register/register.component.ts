@@ -160,6 +160,14 @@ export class RegisterComponent implements OnInit {
     this.submited = false;
   }
 
+  refreshEmail() {
+    this.form.controls.confirmEmail.setValue(this.form.controls.confirmEmail.value);
+  }
+
+  refreshPass() {
+    this.form.controls.confirmPass.setValue(this.form.controls.confirmPass.value);
+  }
+
   ngOnInit() {
     this.form.controls.confirmPass.setValidators([Validators.required, ValidateMatch(this.form.controls.pass)]);
     this.form.controls.confirmEmail.setValidators([Validators.required, Validators.email, ValidateMatch(this.form.controls.email)]);

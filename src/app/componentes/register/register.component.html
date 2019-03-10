@@ -28,7 +28,7 @@
           <mat-error *ngIf="form.controls['idType'].hasError('required')">{{getIdTypeErr()}}</mat-error>
         </mat-form-field>
         <mat-form-field>
-          <input matInput id="email" formControlName="email" placeholder="Correo Electrónico" required>
+          <input matInput id="email" formControlName="email" (keyup)="refreshEmail()" placeholder="Correo Electrónico" required>
           <mat-error *ngIf="form.controls['email'].hasError('required') || form.controls['email'].hasError('email')">{{getEmailErr()}}</mat-error>
         </mat-form-field>
         <mat-form-field>
@@ -36,7 +36,7 @@
           <mat-error *ngIf="this.form.controls['confirmEmail'].hasError('email') || form.controls['confirmEmail'].hasError('required') || this.form.controls['confirmEmail'].hasError('match')">{{getConfirmEmailErr()}}</mat-error>
         </mat-form-field>
         <mat-form-field>
-          <input matInput formControlName="pass" placeholder="Contraseña" type="password" required>
+          <input matInput formControlName="pass" (keyup)="refreshPass()" placeholder="Contraseña" type="password" required>
           <mat-error *ngIf="form.controls['pass'].hasError('required')">{{getPassErr()}}</mat-error>
         </mat-form-field>
         <mat-form-field>
