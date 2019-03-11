@@ -44,6 +44,14 @@ export const routes: Routes = [
       component: ActivityDetailComponent
     },
     {
+     path: 'actividades/crear/presupuesto',
+     component: BudgetComponent
+    },
+    {
+     path: 'actividades/crear/presupuesto/:budgetItem',
+     component: BudgetItemComponent
+    },
+    {
       path: 'actividades/editar/:code',
       component: ActivityDetailComponent
     },

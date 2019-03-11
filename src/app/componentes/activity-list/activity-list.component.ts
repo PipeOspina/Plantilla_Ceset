@@ -21,7 +21,7 @@ export class ActivityListComponent implements OnInit {
     finish: new FormControl('')
   });
 
-  displayedColumns = ['id', 'name', 'coordinatorName'];
+  displayedColumns = ['id', 'date', 'name', 'coordinatorName'];
   dataSource: MatTableDataSource<AcademicActivity>;
   activities: AcademicActivity[];
   auxActivities: AcademicActivity[];
@@ -37,7 +37,7 @@ export class ActivityListComponent implements OnInit {
   constructor(private router: Router, private activityService: ActivityService, private restangular: Restangular) {
     const activities: AcademicActivity[] = [];
     for(let i = 0 ; i < activityService.activities.length; i++) {
-      activities.unshift(activityService.activities[i]);
+      activities.push(activityService.activities[i]);
     }
 
     // Assign the data to the data source for the table to render
@@ -70,6 +70,18 @@ export class ActivityListComponent implements OnInit {
   clicked(row: AcademicActivity) {
     this.activityService.activity = row;
     this.router.navigate(['/inicio/actividades/editar/' + row.id]);
+  }
+
+  parseDate(date: Date) {
+    const day = this.parseCero(date.getDate());
+    const month = this.parseCero(date.getMonth() + 1);
+    const year = this.parseCero(date.getFullYear());
+    const auxDate = `${day}/${month}/${year}`;
+    return auxDate;
+  }
+
+  parseCero(num: number) {
+    return num < 10 ? `0${num}` : num;
   }
 
   applyFilter(filterValue: string) {

@@ -75,8 +75,13 @@ export class BudgetItemComponent implements OnInit {
         page = 'otros';
         break;
     };
-
-    if(page !== this.params['budgetItem']) this.router.navigate([`inicio/actividades/editar/${this.params['code']}/presupuesto/${page}`]);
+    if(this.router.url != `/inicio/actividades/crear/presupuesto/${this.params['budgetItem']}`) {
+      if(page !== this.params['budgetItem'])
+        this.router.navigate([`inicio/actividades/editar/${this.params['code']}/presupuesto/${page}`]);
+    } else {
+      if(page !== this.params['budgetItem'])
+        this.router.navigate([`inicio/actividades/crear/presupuesto/${page}`]);
+    }
   }
 
   auxId = 0;
@@ -156,20 +161,22 @@ export class BudgetItemComponent implements OnInit {
         break;
     };
     this.itemControl.setValue(value);
-    this.currentActivity = this.activityService.activities[this.params['code'] - 1];
+    if(this.params['code']){
+      this.currentActivity = this.activityService.activities[this.params['code'] - 1];
 
-    if(this.currentActivity.budget.items[value].expenditures) {
-      this.exist = true;
-      for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
-        let currentExp = this.currentActivity.budget.items[value].expenditures[i]
-        this.budgetItemData[i].id = i;
-        this.budgetItemData[i].name = currentExp.description;
-        this.budgetItemData[i].quantity = currentExp.quantity;
-        this.budgetItemData[i].realCost = currentExp.realCost;
-        this.budgetItemData[i].value = currentExp.total;
+      if(this.currentActivity.budget.items[value].expenditures) {
+        this.exist = true;
+        for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
+          let currentExp = this.currentActivity.budget.items[value].expenditures[i]
+          this.budgetItemData[i].id = i;
+          this.budgetItemData[i].name = currentExp.description;
+          this.budgetItemData[i].quantity = currentExp.quantity;
+          this.budgetItemData[i].realCost = currentExp.realCost;
+          this.budgetItemData[i].value = currentExp.total;
+        }
+      } else {
+        this.budgetItemData = [];
       }
-    } else {
-      this.budgetItemData = [];
     }
   }
 

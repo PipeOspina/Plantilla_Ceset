@@ -68,7 +68,7 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   goToBudget() {
-    this.router.navigate([`inicio/actividades/editar/${this.params['code']}/presupuesto`]);
+    this.router.navigate([`inicio/actividades/crear/presupuesto`]);
   }
 
   anyError() {
