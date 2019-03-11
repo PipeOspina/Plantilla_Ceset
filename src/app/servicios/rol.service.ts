@@ -45,11 +45,8 @@ export class RolService {
   setPermissions(permissions) {
     this.permissionIds = permissions;
     for(let i = 0; i < 25; i++) {
-      this.permissionIds.forEach(id => {
-        id == (i + 1) ? this.isPermited[i] = true : this.isPermited[i] = false;
-      })
+      this.permissionIds.includes(i + 1) ? this.isPermited[i] = true : this.isPermited[i] = false;
     }
-    console.log('En el rolService, setPermissions(), permissions: ' + permissions);
   }
 }
 

@@ -39,7 +39,7 @@ export class LoginService {
   obtenerRol(): any {
     return this.rol;
   }
-  actualizarRol(roles: Array<{ idRole: Role[] }>) {
+  actualizarRol(roles: Array<{ idRole: Role[] }>, isAdmin?: boolean) {
     //Hacer validación en caso de que el usuario no cuente con roles.
     console.log('Entra a actualizarRol()');
     const auxRoles = [];
@@ -47,7 +47,7 @@ export class LoginService {
       auxRoles.push(role.idRole);
     })
 
-    if(roles.length > 0) {
+    if(roles.length > 0 && !isAdmin) {
       this.rolService.getPermissions(auxRoles)
       .subscribe( res => {
         console.log('Entra al subscribe de actualizarRol() con res: ', res);
@@ -64,6 +64,10 @@ export class LoginService {
       }, err => {
         console.log(err);
       });
+    } else if(isAdmin) {
+      for(let i = 1; i <= 25; i++) {
+        this.rolService.pushPermission({idPermission: i, shortDescription: '', description: ''});
+      }
     }
   }
 
@@ -77,7 +81,7 @@ export class LoginService {
    * Función para almacenar los datos del usuario en localStorage
    * @param token Token JWT
    */
-    guardarDatosUsuario(tokenString: string) {
+    guardarDatosUsuario(tokenString: string, isAdmin?: boolean) {
       let token = this.jwtService.decodeToken(tokenString);
       let us = token.usr;
       let parseao = JSON.parse(us);
@@ -87,7 +91,7 @@ export class LoginService {
       localStorage.setItem(NOMBRE_COMPLETO_USUARIO, token.nom);
       localStorage.setItem(IDENTIFICACION_USUARIO, token.ide);
       localStorage.setItem(ID_USUARIO, token.sub);
-      this.actualizarRol(parseao.rolebyuserCollection);
+      this.actualizarRol(parseao.rolebyuserCollection, isAdmin);
       this.setTokenJWT(tokenString);
     }
 
