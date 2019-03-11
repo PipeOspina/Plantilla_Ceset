@@ -15,7 +15,7 @@ import {
 import { JwtService } from '../servicios/jwt.service';
 import { Token } from '../modelos/token';
 
-import {TOKEN_NAME, NOMBRE_USUARIO, ID_USUARIO, NOMBRE_COMPLETO_USUARIO, IDENTIFICACION_USUARIO, ROL_USUARIO } from '../comun/constantes';
+import {TOKEN_NAME, NOMBRE_USUARIO, ID_USUARIO, NOMBRE_COMPLETO_USUARIO, IDENTIFICACION_USUARIO, ROL_USUARIO, USER_PERMISSIONS } from '../comun/constantes';
 import { RolService } from '../servicios/rol.service';
 import { Role } from '../modelos/role';
 import { Permission } from '../modelos/permission';
@@ -29,8 +29,6 @@ export class LoginService {
   redirectUrl: string;
   @Output() rol: EventEmitter<number> = new EventEmitter();
 
-
-
   constructor(
     private restangular: Restangular,
     public router: Router,
@@ -43,26 +41,30 @@ export class LoginService {
   }
   actualizarRol(roles: Array<{ idRole: Role[] }>) {
     //Hacer validación en caso de que el usuario no cuente con roles.
+    console.log('Entra a actualizarRol()');
     const auxRoles = [];
     roles.forEach(role => {
       auxRoles.push(role.idRole);
     })
 
-    this.rolService.getPermissions(auxRoles)
-    .subscribe( res => {
-      console.log(res);
-      res.forEach(permission => {
-        if(permission.idPermission) {
-          this.rolService.permissions.forEach(auxPermission => {
-            auxPermission.idPermissison == permission.idPermission ?
-            null : this.rolService.permissions.push(permission);
-          });
-        }
-      })
-    }, err => {
-      console.log(err);
-    });
-    console.log(this.rolService.permissions);
+    if(roles.length > 0) {
+      this.rolService.getPermissions(auxRoles)
+      .subscribe( res => {
+        console.log('Entra al subscribe de actualizarRol() con res: ', res);
+        res.forEach(permission => {
+          console.log('Pregunta si existe permission.idPermission: ', permission.idPermission);
+          if(permission.idPermission) {
+            console.log('Hace un foreach con rolService.permissions: ', this.rolService.permissions);
+            this.rolService.permissions.forEach(auxPermission => {
+              auxPermission.idPermissison == permission.idPermission ?
+              null : this.rolService.pushPermission(permission);
+            });
+          }
+        })
+      }, err => {
+        console.log(err);
+      });
+    }
   }
 
   //
@@ -76,18 +78,18 @@ export class LoginService {
    * @param token Token JWT
    */
     guardarDatosUsuario(tokenString: string) {
-    let token = this.jwtService.decodeToken(tokenString);
-    let us = token.usr;
-    let parseao = JSON.parse(us);
-    //En el objeto anterior se encuentran los resultados de la consulta, deben mapearse correctamente.
+      let token = this.jwtService.decodeToken(tokenString);
+      let us = token.usr;
+      let parseao = JSON.parse(us);
+      //En el objeto anterior se encuentran los resultados de la consulta, deben mapearse correctamente.
 
-    localStorage.setItem(NOMBRE_USUARIO, token.usr);
-    localStorage.setItem(NOMBRE_COMPLETO_USUARIO, token.nom);
-    localStorage.setItem(IDENTIFICACION_USUARIO, token.ide);
-    localStorage.setItem(ID_USUARIO, token.sub);
-    this.actualizarRol(parseao.rolebyuserCollection);
-    this.setTokenJWT(tokenString);
-  }
+      localStorage.setItem(NOMBRE_USUARIO, token.usr);
+      localStorage.setItem(NOMBRE_COMPLETO_USUARIO, token.nom);
+      localStorage.setItem(IDENTIFICACION_USUARIO, token.ide);
+      localStorage.setItem(ID_USUARIO, token.sub);
+      this.actualizarRol(parseao.rolebyuserCollection);
+      this.setTokenJWT(tokenString);
+    }
 
   obtenerTokenJWT(): string {
     console.log(localStorage.getItem(TOKEN_NAME));
@@ -96,6 +98,9 @@ export class LoginService {
 
   logout() {
     localStorage.clear();
+    this.rolService.permissionIds = [];
+    this.rolService.isPermited = [];
+    this.rolService.permissions = [{idPermissison: 0, shortDescription: '', description: ''}];
     this.router.navigate(['login']);
   }
 

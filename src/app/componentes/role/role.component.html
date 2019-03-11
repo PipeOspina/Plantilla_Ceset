@@ -85,8 +85,8 @@
     </div>
   </div>
   <div class="create" *ngIf="!this.userSelected">
-    <button mat-raised-button class="full" color="primary" (click)="goToRoleView()">Ver Lista de Roles</button>
-    <button mat-raised-button color="primary" (click)="goToRegister()">Crear Usuario</button>
-    <button mat-raised-button color="primary" (click)="goToCreateRole()">Crear Rol</button>
+    <button mat-raised-button *ngIf="showRoleView()" [ngClass]="{ 'full': !showRegister() }" color="primary" (click)="goToRoleView()">Ver Lista de Roles</button>
+    <button mat-raised-button *ngIf="showRegister()" [ngClass]="{ 'full': !showRoleView() }" color="primary" (click)="goToRegister()">Crear Usuario</button>
+    <!--<button mat-raised-button *ngIf="" color="primary" (click)="goToCreateRole()">Crear Rol</button> Esta linea deberia estar en la lista de roles-->
   </div>
 </mat-card>

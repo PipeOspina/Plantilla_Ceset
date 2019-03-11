@@ -33,9 +33,9 @@
             fixedTopGap="56">
             <mat-toolbar class="toolbar pointer" (click)="goToStart(drawer)" color="primary">EduconCESET</mat-toolbar>
             <mat-nav-list>
-                <a mat-list-item [ngClass]="{'selected' : this.router.url === '/inicio/actividades'}" [routerLink]="['actividades']" (click)="drawer.toggle()">Lista de Actividades</a>
-                <a mat-list-item [ngClass]="{'selected' : this.router.url === '/inicio/cohortes'}" [routerLink]="['cohortes']" (click)="drawer.toggle()">Lista de Cohortes</a>
-                <a mat-list-item [ngClass]="{'selected' : this.router.url === '/inicio/roles'}" [routerLink]="['roles']" (click)="drawer.toggle()">Roles</a>
+                <a mat-list-item *ngIf="displayActivities()" [ngClass]="{'selected' : this.router.url === '/inicio/actividades'}" [routerLink]="['actividades']" (click)="drawer.toggle()">Lista de Actividades</a>
+                <a mat-list-item *ngIf="displayActivities()" [ngClass]="{'selected' : this.router.url === '/inicio/cohortes'}" [routerLink]="['cohortes']" (click)="drawer.toggle()">Lista de Cohortes</a>
+                <a mat-list-item *ngIf="displayRoles()" [ngClass]="{'selected' : this.router.url === '/inicio/roles'}" [routerLink]="['roles']" (click)="drawer.toggle()">Roles</a>
             </mat-nav-list>
             <button mat-icon-button style="bottom: 15px; position: absolute; right: 15px;"><mat-icon>settings</mat-icon></button>
         </mat-sidenav>

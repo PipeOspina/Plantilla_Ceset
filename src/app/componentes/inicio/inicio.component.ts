@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, Output } from '@angular/core';
-import { RolService } from '../../servicios/rol.service';
+import { RolService, PERMISSIONS } from '../../servicios/rol.service';
 import { Rol } from '../../modelos/rol';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { LoginService } from '../../auth/login.service';
@@ -9,6 +9,7 @@ import { AcademicActivity, createNewActivity } from '../../modelos/academicActiv
 import * as XLSX from 'xlsx';
 import { FooterComponent } from '../footer/footer.component';
 import { RoleComponent } from '../role/role.component';
+import { USER_PERMISSIONS } from '../../comun/constantes';
 
 @Component({
   selector: 'app-inicio',
@@ -32,6 +33,9 @@ export class InicioComponent implements OnInit {
   private _mobileQueryListener: () => void;
 
   constructor(public loginService: LoginService, changeDetectorRef: ChangeDetectorRef, media: MediaMatcher, private rolSs: RolService, public router: Router, private activityService: ActivityService) {
+    setTimeout(() => {
+      localStorage.getItem(USER_PERMISSIONS) ? this.rolSs.setPermissions(JSON.parse(localStorage.getItem(USER_PERMISSIONS))) : null;
+    }, 1000);
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);
@@ -65,11 +69,49 @@ export class InicioComponent implements OnInit {
     console.log(event, 'Holiwis', this.roles, this.activityService.roles);
   }
 
+  
+
+  displayActivities(): boolean {
+    const isPermited = this.rolSs.isPermited;
+    return  isPermited[PERMISSIONS.CREAA.id - 1] ||
+            isPermited[PERMISSIONS.EDTAA.id - 1] ||
+            isPermited[PERMISSIONS.ADJPAA.id - 1] ||
+            isPermited[PERMISSIONS.EDJAA.id - 1] ||
+            isPermited[PERMISSIONS.CRETAA.id - 1] ||
+            isPermited[PERMISSIONS.EDTAA.id - 1] ||
+            isPermited[PERMISSIONS.EDTRB.id - 1] ||
+            isPermited[PERMISSIONS.GENREPPTO.id - 1] ||
+            isPermited[PERMISSIONS.ADDSCT.id - 1] ||
+            isPermited[PERMISSIONS.CREGAAA.id - 1] ||
+            isPermited[PERMISSIONS.EDTGAAA.id - 1] ||
+            isPermited[PERMISSIONS.EDTANALF.id - 1];
+  }
+
+  displayCohhorts(): boolean {
+    const isPermited = this.rolSs.isPermited;
+    return  isPermited[PERMISSIONS.CRECO.id - 1] ||
+            isPermited[PERMISSIONS.EDTCO.id - 1] ||
+            isPermited[PERMISSIONS.EDTRUBCO.id - 1] ||
+            isPermited[PERMISSIONS.EDTGASCO.id - 1] ||
+            isPermited[PERMISSIONS.CRGRUCO.id - 1] ||
+            isPermited[PERMISSIONS.CONCOR.id - 1] ||
+            isPermited[PERMISSIONS.EDTDSCT.id - 1] ||
+            isPermited[PERMISSIONS.EDTGRUCO.id - 1];
+  }
+
+  displayRoles(): boolean {
+    const isPermited = this.rolSs.isPermited;
+    return  isPermited[PERMISSIONS.ADDROL.id - 1] ||
+            isPermited[PERMISSIONS.QUIROL.id - 1] ||
+            isPermited[PERMISSIONS.ADDPER.id - 1] ||
+            isPermited[PERMISSIONS.QUIPER.id - 1] ||
+            isPermited[PERMISSIONS.CREROL.id - 1];
+  }
+
   ngOnInit() {
     this.hideActivityList = true;
     this.hideCohortList = true;
     this.hideOther = true;
-    console.log();
   }
 
   toggleNotification() {
@@ -92,10 +134,6 @@ export class InicioComponent implements OnInit {
 
   ngDoCheck() {
     this.scrollShowed = document.getElementById('content').clientHeight < document.getElementById('content').scrollHeight;
-  }
-
-  ngAfterViewInit() {
-
   }
 
   array = [,,,,,,,,,,,,,,,,,,,,,,];

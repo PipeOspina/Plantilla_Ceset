@@ -9,6 +9,7 @@ import { User, createNewUser, ID_TYPES } from '../../modelos/user';
 import { Role, ROLES } from '../../modelos/role';
 import { DialogBudgetItemComponent } from '../dialog-budget-item/dialog-budget-item.component';
 import { DialogConfirmComponent, YES_NO_DIALOG, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
+import { RolService, PERMISSIONS } from '../../servicios/rol.service';
 
 @Component({
   selector: 'app-role',
@@ -94,6 +95,18 @@ export class RoleComponent implements OnInit {
     });
   }
 
+  showRoleView(): boolean {
+    const isPermited = this.rolService.isPermited;
+    return  isPermited[PERMISSIONS.ADDPER.id - 1] ||
+            isPermited[PERMISSIONS.QUIPER.id - 1] ||
+            isPermited[PERMISSIONS.CREROL.id - 1];
+  }
+
+  showRegister(): boolean {
+    const isPermited = this.rolService.isPermited;
+    return  isPermited[PERMISSIONS.ADDROL.id - 1];
+  }
+
   acceptRequest() {
     this.roles.push(this.user.roleRequest.role);
     this.requestedRole = false;
@@ -134,7 +147,7 @@ export class RoleComponent implements OnInit {
     this.userSelected = false;
   }
 
-  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private el: ElementRef) {
+  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private el: ElementRef, private rolService: RolService) {
     // Create 100 users
     const users: User[] = [];
     for (let i = 1; i <= 100; i++) { users.push(createNewUser(i)); }
