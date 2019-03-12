@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AcademicActivity, createNewActivity } from '../../modelos/academicActivity';
 import { ActivityService } from '../../servicios/activity.service';
 import * as XLSX from 'xlsx';
+import { User } from '../../modelos/user';
 
 @Component({
   selector: 'app-activity-detail',
@@ -79,9 +80,9 @@ export class ActivityDetailComponent implements OnInit {
     this.router.navigate(['inicio/actividades']);
   }
 
-  createActivity() {
+  /** createActivity() {
     this.router.navigate['inicio/cohortes/crear'];
-  }
+  }**/
 
   constructor(private router: Router, private route: ActivatedRoute, private activityService: ActivityService) { }
 
@@ -198,6 +199,31 @@ export class ActivityDetailComponent implements OnInit {
 
   console() {
     console.log(this.data);
+  }
+
+  createActivity() {
+    const user: User = {
+      email: 'juanfgallo94@gmail.com',
+      id: 8,
+      idType: 'Cedula de Ciudadania',
+      lastName: 'Gallo',
+      name: 'Juan'
+    }
+    const activity: AcademicActivity = {
+      id: (this.activityService.activities.length + 1),
+      name: this.generalForm.controls['name'].value,
+      coordinatorEmail: this.generalForm.controls['email'].value,
+      coordinatorName: this.generalForm.controls['coordinator'].value,
+      coordinatorPhone: this.generalForm.controls['phone'].value,
+      creationDate: new Date(),
+      dependency: this.generalForm.controls['dependency'].value,
+      duration: this.generalForm.controls['duration'].value,
+      state: 'created',
+      type: this.generalForm.controls['type'].value,
+      user: user
+    };
+    this.activityService.activities.unshift(activity);
+    this.router.navigate(['inicio/actividades']);
   }
 
 }

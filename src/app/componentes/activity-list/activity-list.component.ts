@@ -86,6 +86,9 @@ export class ActivityListComponent implements OnInit {
 
   applyFilter(filterValue: string) {
     filterValue ? this.searched = true : this.searched = false;
+    let filterNumber: number;
+    //Error de TypeScrip pero funciona por la definicion de ECMAScript 6+ isNaN(val: any), no isNaN(val: number)
+    !isNaN(filterValue) ? filterNumber = parseInt(filterValue) : filterNumber = 32;
 
     // Resetea la fecha de hoy para ser comparable con las demas fechas de datos dummies
     const today = new Date();
@@ -96,18 +99,25 @@ export class ActivityListComponent implements OnInit {
 
     let auxiliarActivities: AcademicActivity[] = [];
 
-    if(this.startDate > today || this.finishDate > today || (!this.startDate && !this.finishDate)) {
+    if((this.startDate > today || this.finishDate > today || (!this.startDate && !this.finishDate)) && filterNumber <= 31) {
       //this.startErr = "La fecha debe ser antes de hoy";
      // this.tryStartErr = true;
+      console.log(filterNumber + ' en el if');
       this.dataSource = new MatTableDataSource(this.activities);
     } else {
       for(let i = 0 ; i < this.activities.length; i++) {
-        if((this.activities[i].creationDate >= this.startDate && this.activities[i].creationDate <= this.finishDate) ||
-          (this.activities[i].creationDate >= this.startDate && !this.finishDate) ||
-          (this.activities[i].creationDate <= this.finishDate && !this.startDate)) {
+        if(filterNumber > 31) {
+          if(this.activities[i].id == filterNumber) {
+            auxiliarActivities = [this.auxActivities[i]];
+            console.log('Es mayor a 31');
+          }
+        } else if((this.activities[i].creationDate >= this.startDate && this.activities[i].creationDate <= this.finishDate) ||
+                  (this.activities[i].creationDate >= this.startDate && !this.finishDate) ||
+                  (this.activities[i].creationDate <= this.finishDate && !this.startDate)) {
           auxiliarActivities.push(this.activities[i]);
         }
       }
+      console.log(auxiliarActivities);
       this.dataSource = new MatTableDataSource(auxiliarActivities);
     }
     this.dataSource.paginator = this.paginator;
