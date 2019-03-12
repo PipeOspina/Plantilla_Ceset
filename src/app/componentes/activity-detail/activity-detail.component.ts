@@ -69,7 +69,7 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   goToBudget() {
-    this.router.navigate([`inicio/actividades/crear/presupuesto`]);
+    this.router.navigate([`inicio/portafolio/crear/presupuesto`]);
   }
 
   anyError() {
@@ -77,7 +77,7 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['inicio/actividades']);
+    this.router.navigate(['inicio/portafolio']);
   }
 
   /** createActivity() {
@@ -209,21 +209,29 @@ export class ActivityDetailComponent implements OnInit {
       lastName: 'Gallo',
       name: 'Juan'
     }
+
+    const today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
     const activity: AcademicActivity = {
       id: (this.activityService.activities.length + 1),
       name: this.generalForm.controls['name'].value,
       coordinatorEmail: this.generalForm.controls['email'].value,
       coordinatorName: this.generalForm.controls['coordinator'].value,
       coordinatorPhone: this.generalForm.controls['phone'].value,
-      creationDate: new Date(),
+      creationDate: today,
       dependency: this.generalForm.controls['dependency'].value,
       duration: this.generalForm.controls['duration'].value,
       state: 'created',
       type: this.generalForm.controls['type'].value,
-      user: user
+      user: user,
+      investigationGroup: this.generalForm.controls['resGroup'].value
     };
     this.activityService.activities.unshift(activity);
-    this.router.navigate(['inicio/actividades']);
+    this.router.navigate(['inicio/portafolio']);
   }
 
 }

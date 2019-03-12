@@ -69,7 +69,7 @@ export class ActivityListComponent implements OnInit {
 
   clicked(row: AcademicActivity) {
     this.activityService.activity = row;
-    this.router.navigate(['/inicio/actividades/editar/' + row.id]);
+    this.router.navigate(['/inicio/portafolio/editar/' + row.id]);
   }
 
   parseDate(date: Date) {
@@ -84,48 +84,63 @@ export class ActivityListComponent implements OnInit {
     return num < 10 ? `0${num}` : num;
   }
 
-  applyFilter(filterValue: string) {
-    filterValue ? this.searched = true : this.searched = false;
-    let filterNumber: number;
-    //Error de TypeScrip pero funciona por la definicion de ECMAScript 6+ isNaN(val: any), no isNaN(val: number)
-    !isNaN(filterValue) ? filterNumber = parseInt(filterValue) : filterNumber = 32;
-
-    // Resetea la fecha de hoy para ser comparable con las demas fechas de datos dummies
+  getToday(): Date {
     const today = new Date();
     today.setHours(0);
     today.setMinutes(0);
     today.setSeconds(0);
     today.setMilliseconds(0);
+    return today;
+  }
 
-    let auxiliarActivities: AcademicActivity[] = [];
+  applyFilter(filterValue: string) {
+    filterValue ? this.searched = true : this.searched = false;
+    const filterNumber: number = !isNaN(parseInt(filterValue)) ? parseInt(filterValue) : 0;
 
-    if((this.startDate > today || this.finishDate > today || (!this.startDate && !this.finishDate)) && filterNumber <= 31) {
-      //this.startErr = "La fecha debe ser antes de hoy";
-     // this.tryStartErr = true;
-      console.log(filterNumber + ' en el if');
-      this.dataSource = new MatTableDataSource(this.activities);
-    } else {
-      for(let i = 0 ; i < this.activities.length; i++) {
-        if(filterNumber > 31) {
-          if(this.activities[i].id == filterNumber) {
-            auxiliarActivities = [this.auxActivities[i]];
-            console.log('Es mayor a 31');
-          }
-        } else if((this.activities[i].creationDate >= this.startDate && this.activities[i].creationDate <= this.finishDate) ||
-                  (this.activities[i].creationDate >= this.startDate && !this.finishDate) ||
-                  (this.activities[i].creationDate <= this.finishDate && !this.startDate)) {
-          auxiliarActivities.push(this.activities[i]);
-        }
+    const today = this.getToday();
+
+    let filteredActivities: AcademicActivity[] = [];
+
+    if(this.startDate > today || this.finishDate > today || (!this.startDate && !this.finishDate)) {
+      if(filterNumber == 0) {
+        filteredActivities = this.activities;
+      } else {
+        this.activities.forEach(activity => {
+          activity.id.toString().startsWith(filterNumber.toString()) ? filteredActivities.push(activity) : null;
+          filteredActivities.sort((a, b) => {
+            return a.id > b.id ? 1 : a.id == b.id ? 0 : -1;
+          });
+        });
       }
-      console.log(auxiliarActivities);
-      this.dataSource = new MatTableDataSource(auxiliarActivities);
+    } else {
+      this.activities.forEach(activity => {
+        if( (activity.creationDate >= this.startDate && activity.creationDate <= this.finishDate) ||
+            (activity.creationDate >= this.startDate && !this.finishDate) ||
+            (activity.creationDate <= this.finishDate && !this.startDate)) {
+              if(filterNumber == 0) {
+                filteredActivities.push(activity);
+              } else if(activity.id.toString().startsWith(filterNumber.toString())) {
+                filteredActivities.push(activity);
+                filteredActivities.sort((a, b) => {
+                  return a.id > b.id ? 1 : a.id == b.id ? 0 : -1;
+                });
+              }
+        }
+      });
     }
+
+    this.sortDataTable(filteredActivities, filterValue);
+  }
+
+  sortDataTable(filteredActivities: AcademicActivity[], value: string) {
+    this.dataSource = new MatTableDataSource(filteredActivities);
+
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
 
-    filterValue = filterValue.trim(); // Remove whitespace
-    filterValue = filterValue.toLowerCase(); // Datasource defaults to lowercase matches
-    this.dataSource.filter = filterValue;
+    value = value.trim(); // Remove whitespace
+    value = value.toLowerCase(); // Datasource defaults to lowercase matches
+    this.dataSource.filter = value;
   }
 
   //Función para descartar los datos de busqueda
@@ -141,7 +156,7 @@ export class ActivityListComponent implements OnInit {
   }
 
   createActivity() {
-    this.router.navigate(['/inicio/actividades/crear']);
+    this.router.navigate(['/inicio/portafolio/crear']);
   }
 
   ngOnInit() {

@@ -25,7 +25,7 @@ export class ThemeListComponent implements OnInit {
 
   showDataForm() {
     if(this.itemControl.value != this.params['code'])
-      this.router.navigate([`inicio/actividades/editar/${this.itemControl.value}/temas`]);
+      this.router.navigate([`inicio/portafolio/editar/${this.itemControl.value}/temas`]);
   }
 
   constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService) { }

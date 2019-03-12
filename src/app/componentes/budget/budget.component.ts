@@ -88,9 +88,9 @@ export class BudgetComponent implements OnInit {
         page = 'otros';
         break;
     }
-    this.router.url == '/inicio/actividades/crear/presupuesto' ?
-    this.router.navigate([`inicio/actividades/crear/presupuesto/${page}`]) :
-    this.router.navigate([`inicio/actividades/editar/${this.params['code']}/presupuesto/${page}`]);
+    this.router.url == '/inicio/portafolio/crear/presupuesto' ?
+    this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]) :
+    this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
   }
 
   showFinancialAnalysis() {

@@ -35,36 +35,36 @@ export const routes: Routes = [
 
    children: [
      {
-       path: 'actividades',
+       path: 'portafolio',
        component: ActivityListComponent,
        canLoad: [AuthGuard] // Ubicar en las rutas necesarias
      },
      {
-      path: 'actividades/crear',
+      path: 'portafolio/crear',
       component: ActivityDetailComponent
     },
     {
-     path: 'actividades/crear/presupuesto',
+     path: 'portafolio/crear/presupuesto',
      component: BudgetComponent
     },
     {
-     path: 'actividades/crear/presupuesto/:budgetItem',
+     path: 'portafolio/crear/presupuesto/:budgetItem',
      component: BudgetItemComponent
     },
     {
-      path: 'actividades/editar/:code',
+      path: 'portafolio/editar/:code',
       component: ActivityDetailComponent
     },
     {
-      path: 'actividades/editar/:code/temas',
+      path: 'portafolio/editar/:code/temas',
       component: ThemeListComponent
     },
     {
-      path: 'actividades/editar/:code/presupuesto',
+      path: 'portafolio/editar/:code/presupuesto',
       component: BudgetComponent
     },
     {
-      path: 'actividades/editar/:code/presupuesto/:budgetItem',
+      path: 'portafolio/editar/:code/presupuesto/:budgetItem',
       component: BudgetItemComponent
     },
     {

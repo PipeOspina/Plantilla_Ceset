@@ -75,12 +75,12 @@ export class BudgetItemComponent implements OnInit {
         page = 'otros';
         break;
     };
-    if(this.router.url != `/inicio/actividades/crear/presupuesto/${this.params['budgetItem']}`) {
+    if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
       if(page !== this.params['budgetItem'])
-        this.router.navigate([`inicio/actividades/editar/${this.params['code']}/presupuesto/${page}`]);
+        this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
     } else {
       if(page !== this.params['budgetItem'])
-        this.router.navigate([`inicio/actividades/crear/presupuesto/${page}`]);
+        this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
     }
   }
 
