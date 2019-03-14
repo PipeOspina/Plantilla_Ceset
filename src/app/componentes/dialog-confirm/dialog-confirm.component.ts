@@ -18,7 +18,8 @@ export class DialogConfirmComponent implements OnInit {
   constructor(private router: Router,
               private route: ActivatedRoute,
               public dialog: MatDialog,
-              @Inject(MAT_DIALOG_DATA) private data: any,
+              //Dejar el data en public para el deploy
+              @Inject(MAT_DIALOG_DATA) public data: any,
               private dialogRef: MatDialogRef<DialogBudgetItemComponent>) { }
 
   ngOnInit() {
