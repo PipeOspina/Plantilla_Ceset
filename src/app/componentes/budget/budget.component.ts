@@ -18,7 +18,7 @@ export class BudgetComponent implements OnInit {
   params: any;
 
   budgetData: Item[]  = [
-    { id: 0, name: 'Personal/Recurso Humano', value: 1234567890 },
+    { id: 0, name: 'Personal/Recurso Humano', value: 0 },
     { id: 1, name: 'Materiales/Suministros/Obra Fisica', value: 0 },
     { id: 2, name: 'Equipos/Maquinaria', value: 0 },
     { id: 3, name: 'Transporte/Sostenimiento en Campo', value: 0 },
@@ -47,7 +47,7 @@ export class BudgetComponent implements OnInit {
   }
 
   parseValue(value: number) {
-    console.log(this.router.url);
+    //console.log(this.router.url);
     return parseValue(value);
   }
 
@@ -85,7 +85,7 @@ export class BudgetComponent implements OnInit {
         page = 'otros';
         break;
       default:
-        page = 'otros';
+        page = '';
         break;
     }
     this.router.url == '/inicio/portafolio/crear/presupuesto' ?
@@ -106,6 +106,7 @@ export class BudgetComponent implements OnInit {
   total: number = 0;
 
   ngOnInit() {
+    console.log('Se ejecutó el ngOnInit()');
     this.sub = this.route.params.subscribe(params => { this.params = params });
     if(this.params['code']) {
       const budget = this.activityService.activities[this.params['code'] - 1].budget;
@@ -127,6 +128,26 @@ export class BudgetComponent implements OnInit {
       budget.unexpected = this.unexpect;
       
       this.activityService.activities[this.params['code'] - 1].budget = budget;
+    } else if(this.activityService.activity) {
+      if(this.activityService.activity.budget) {
+        const budget = this.activityService.activity.budget;
+        for(let i = 0; i < budget.items.length; i++){
+          this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
+          this.subTotal += this.budgetData[i].value;
+        }
+
+        this.unexpect = Math.round(this.subTotal * 0.03);
+        this.total = this.subTotal + this.unexpect;
+
+        this.udeaContributions[0].value = Math.round((this.subTotal - this.budgetData[0].value) * 0.1);
+        this.udeaContributions[1].value = Math.round(this.total * 0.06);
+
+        this.engContributions[0].value = Math.round(this.total * 0.14);
+
+        budget.subTotal = this.subTotal;
+        budget.total = this.total;
+        budget.unexpected = this.unexpect;
+      }
     }
   }
 

@@ -49,16 +49,30 @@
     margin-top: 5px;
     margin-bottom: 5px;
   }
-
+/*
   .buttons > * {
     margin-right: 2%;
     width: 22%;
   }
-
-  .buttons > *:last-child {
+*/
+  /*.buttons > *:last-child {
     margin: 0 !important;
   }
 
   .buttons > *:first-child {
     margin-left: 2% !important;
+  }*/
+
+  .full {
+    width: 100%;
+    margin-left: 1%;
+  }
+
+  .full > .three {
+    width: 32%;
+    margin-bottom: 5px;
+  }
+
+  .full > .two {
+    width: 48.5%;
   }

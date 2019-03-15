@@ -7,7 +7,7 @@ import { Theme } from './theme';
 
 export interface AcademicActivity {
     id: number;
-    user: User;
+    user?: User;
     name: string;
     type: string;
     dependency: string;

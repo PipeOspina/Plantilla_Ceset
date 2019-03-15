@@ -4,7 +4,7 @@ export interface Budget {
     subTotal?: number;
     unexpected?: number;
     total?: number;
-    contributions: Contribution[];
+    contributions?: Contribution[];
     financialAnalysis?: FinancialAnalysis;
     discounts?: Discounts;
 }

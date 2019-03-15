@@ -69,6 +69,28 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   goToBudget() {
+    const general = this.generalForm.controls;
+
+    const today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    const activity: AcademicActivity = {
+      id: (this.activityService.activities.length + 1),
+      name: this.generalForm.controls['name'].value,
+      coordinatorEmail: this.generalForm.controls['email'].value,
+      coordinatorName: this.generalForm.controls['coordinator'].value,
+      coordinatorPhone: this.generalForm.controls['phone'].value,
+      creationDate: today,
+      dependency: this.generalForm.controls['dependency'].value,
+      duration: this.generalForm.controls['duration'].value,
+      state: 'created',
+      type: this.generalForm.controls['type'].value,
+      investigationGroup: this.generalForm.controls['resGroup'].value
+    };
+    this.activityService.activity = activity;
     this.router.navigate([`inicio/portafolio/crear/presupuesto`]);
   }
 
@@ -93,7 +115,7 @@ export class ActivityDetailComponent implements OnInit {
 
     this.createView = this.router.url.includes('crear');
 
-    if(!activity)
+    if(!activity && !this.createView)
       activity = this.activityService.activities[parseInt(this.params['code']) - 1];
 
     if(!this.createView) {

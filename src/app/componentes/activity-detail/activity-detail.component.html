@@ -92,9 +92,9 @@
 
       <form [formGroup]="this.budgetForm">
         <input type="hidden" formControlName="$key">
-        <mat-form-field class="pointer" (click)="goToBudget()">
+        <mat-form-field matTooltip="Click para ver el Presupuesto!" matTooltipPosition="before" class="pointer" (click)="goToBudget()">
           <input matInput class="pointer" formControlName="value" placeholder="Valor" required>
-          <mat-icon class="disabled pointer" matSuffix>monetization_on</mat-icon>
+          <mat-icon class="disabled pointer icon" matSuffix>monetization_on</mat-icon>
           <mat-error *ngIf="contractForm.controls['type'].hasError('required')">{{getNameErr()}}</mat-error>
         </mat-form-field>
       </form>
@@ -180,6 +180,4 @@
     <button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="warn" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Eliminar</button>
     <button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="primary" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Guardar</button>
   </div>
-
-  <button (click)="console()">Console</button>
 </mat-card>

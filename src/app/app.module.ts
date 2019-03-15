@@ -31,7 +31,8 @@ import {
   MatPaginatorModule,
   MatPaginatorIntl,
   MatSortModule,
-  MatExpansionModule
+  MatExpansionModule,
+  MatTooltipModule
 } from '@angular/material';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AuthGuard } from './auth/auth-guard.service';
@@ -120,7 +121,8 @@ import { DialogThemeComponent } from './componentes/dialog-theme/dialog-theme.co
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatTooltipModule
   ],
   providers: [
     CifradoService,

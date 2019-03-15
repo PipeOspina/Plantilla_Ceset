@@ -7,6 +7,9 @@ import { DialogConfirmarComponent } from '../dialog-confirmar/dialog-confirmar.c
 import { DialogBudgetItemComponent } from '../dialog-budget-item/dialog-budget-item.component';
 import { ActivityService } from '../../servicios/activity.service';
 import { AcademicActivity } from '../../modelos/academicActivity';
+import { PlatformLocation } from '@angular/common';
+import { DialogConfirmComponent, YES_NO_DIALOG, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
+import { Expenditure } from '../../modelos/budget';
 
 @Component({
   selector: 'app-budget-item',
@@ -37,6 +40,8 @@ export class BudgetItemComponent implements OnInit {
   budgetItemData: BudgetItem[] = [];
 
   budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
+
+  isOtherSelected = false;
 
   showDataForm() {
     let page: string;
@@ -76,18 +81,25 @@ export class BudgetItemComponent implements OnInit {
         break;
     };
     if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
-      if(page !== this.params['budgetItem'])
+      if(page !== this.params['budgetItem']) {
         this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
+        this.isOtherSelected = true;
+      }
     } else {
-      if(page !== this.params['budgetItem'])
+      if(page !== this.params['budgetItem']) {
         this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
+        this.isOtherSelected = true;
+      }
     }
   }
+
+  somethinThere;
 
   auxId = 0;
 
   openDialog(type: string, row: any) {
-    let dialogRef = this.dialog.open(DialogBudgetItemComponent, {
+    console.log(this.budgetItemDataSource.data);
+    const dialogRef = this.dialog.open(DialogBudgetItemComponent, {
       data: {
         page: this.params['budgetItem'],
         type: type,
@@ -95,18 +107,8 @@ export class BudgetItemComponent implements OnInit {
       }
     });
 
-    this.budgetItemData.push({
-      id: 1,
-      name: 'aksjdb',
-      quantity: 546,
-      realCost: 0,
-      value: 54
-    });
-
-    let data;
     dialogRef.afterClosed().subscribe(result => {
-      console.log(result);
-      this.budgetItemData.push({
+      /*this.budgetItemData.push({
         id: this.auxId,
         name: result.data.controls['description'].value,
         quantity: result.data.controls['quantity'].value,
@@ -115,15 +117,55 @@ export class BudgetItemComponent implements OnInit {
       });
 
       this.budgetItemDataSource.data = this.budgetItemData;
+      console.log(this.budgetItemDataSource.data);
+      console.log(this.budgetItemData, ' el console log'); 
+      this.somethinThere = true;*/
+      const data: Expenditure = result.data;
+
+      if(result) {
+        if(this.currentActivity.budget.items[this.getPage()].expenditures) {
+
+        } else {
+          this.currentActivity.budget.items[this.getPage()].expenditures = [data];
+        }
+      } else {
+        console.log('no hubo resultado');
+      }
     });
 
     this.auxId++;
   }
 
-  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService) { }
+  backClicked = false;
 
-  ngOnInit() {
-    this.sub = this.route.params.subscribe(params => { this.params = params });
+  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService, public location: PlatformLocation) {
+    this.location.onPopState(() => {
+      if(this.isOtherSelected && !this.backClicked) {
+        dialog.open(DialogConfirmComponent, {
+          data: {
+            type: OK_DIALOG,
+            title: 'Atras',
+            message: 'Click en el botón <b>Volver</b> para deshacer los cambios'
+          }
+        })
+          .afterClosed()
+          .subscribe(res => {
+            res || res == undefined ? this.backClicked = false : null;
+          });
+      }
+      this.backClicked = true;
+    });
+  }
+
+  back() {
+    this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+  }
+
+  save() {
+    this.back();
+  }
+
+  getPage() {
     let value: number;
     switch(this.params['budgetItem']) {
       case 'personal':
@@ -160,8 +202,15 @@ export class BudgetItemComponent implements OnInit {
         value = 9;
         break;
     };
+    return value;
+  }
+
+  ngOnInit() {
+    this.sub = this.route.params.subscribe(params => { this.params = params });
+    const value = this.getPage();
     this.itemControl.setValue(value);
     if(this.params['code']){
+      this.somethinThere = true;
       this.currentActivity = this.activityService.activities[this.params['code'] - 1];
 
       if(this.currentActivity.budget.items[value].expenditures) {
@@ -177,6 +226,27 @@ export class BudgetItemComponent implements OnInit {
       } else {
         this.budgetItemData = [];
       }
+    } else if(this.activityService.activity) {
+      this.currentActivity = this.activityService.activity;
+      if(this.currentActivity.budget) {
+        this.somethinThere = true;
+        this.exist = true;
+        for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
+          let currentExp = this.currentActivity.budget.items[value].expenditures[i]
+          this.budgetItemData[i].id = i;
+          this.budgetItemData[i].name = currentExp.description;
+          this.budgetItemData[i].quantity = currentExp.quantity;
+          this.budgetItemData[i].realCost = currentExp.realCost;
+          this.budgetItemData[i].value = currentExp.total;
+        }
+      } else {
+        this.currentActivity.budget = {
+          id: this.currentActivity.id,
+          items: []
+        }
+      }
+    } else {
+      this.somethinThere = false;
     }
   }
 
