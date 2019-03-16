@@ -404,3 +404,5 @@ export const PERSONAL: Item = {
       'Unidad'    
     ]
   }
+  
+  export const ITEMS: Item[] = [PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER];

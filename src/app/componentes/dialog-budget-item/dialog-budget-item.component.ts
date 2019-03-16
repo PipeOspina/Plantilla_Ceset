@@ -8,6 +8,7 @@ import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATI
 import { Item } from '../../modelos/budget';
 import { ActivityService } from '../../servicios/activity.service';
 import { parseValue } from '../budget/budget.component';
+import { DialogConfirmComponent, YES_NO_DIALOG } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-dialog-budget-item',
@@ -19,7 +20,20 @@ export class DialogBudgetItemComponent implements OnInit {
 
   charged = false;
 
-  currentExpenditure: Expenditure;
+  currentExpenditure: Expenditure = {
+    comment: '',
+    contrated: false,
+    description: '',
+    fp: 1.6,
+    quantity: 0,
+    total: 0,
+    unityValue: 0,
+    totalWithFP: 0,
+    totalWithoutFP: 0,
+    unityWithFP: 0,
+    time: 0,
+    dedication: 0
+  };
 
   type: Item;
   timeNeeded: boolean = false;
@@ -41,10 +55,10 @@ export class DialogBudgetItemComponent implements OnInit {
         description: new FormControl('', Validators.required),
         quantity: new FormControl('', Validators.required),
         unity: new FormControl('', Validators.required),
-        time: new FormControl('', Validators.required),
-        dedication: new FormControl('', Validators.required),
+        time: new FormControl(''),
+        dedication: new FormControl(''),
         unityValue: new FormControl('', Validators.required),
-        comment: new FormControl('', Validators.required)
+        comment: new FormControl('')
       });
     }, 50);
     switch(this.data.page) {
@@ -89,25 +103,16 @@ export class DialogBudgetItemComponent implements OnInit {
         break;
     };
 
-    this.currentExpenditure = {
-      comment: '',
-      contrated: false,
-      description: '',
-      fp: 1.6,
-      quantity: 0,
-      total: 0,
-      unityValue: 0,
-      totalWithFP: 0,
-      totalWithoutFP: 0,
-      unityWithFP: 0
-    }
-
     this.isCreate = this.data.type === 'create' ? true : false;
     this.isEdit = !this.isCreate;
   }
 
   parseMoney(value: number) {
     return `$${parseValue(value)}`;
+  }
+
+  selected() {
+    this.currentExpenditure.description = this.form.controls['description'].value;
   }
 
   quantityKeyUp() {
@@ -132,18 +137,29 @@ export class DialogBudgetItemComponent implements OnInit {
 
   setValues() {
     const current = this.currentExpenditure;
-    if(current.time && current.dedication && current.unityValue) {
-      this.currentExpenditure.totalWithoutFP = current.quantity * current.time * current.dedication * current.unityValue;
-      if(current.fp) {
-        this.currentExpenditure.unityWithFP = current.unityValue * current.fp;
-        this.currentExpenditure.totalWithFP = current.quantity * current.time * current.dedication * current.unityWithFP;
-        this.currentExpenditure.total = current.quantity * current.time * current.dedication * current.unityWithFP;
+    if(this.dedicationNeeded && current.dedication != 0) {
+      if(this.timeNeeded && current.time != 0) {
+        this.currentExpenditure.totalWithoutFP = current.quantity * current.time * current.dedication * current.unityValue;
+        if(this.fpNeeded) {
+          this.currentExpenditure.unityWithFP = current.unityValue * current.fp;
+          this.currentExpenditure.totalWithFP = current.quantity * current.time * current.dedication * current.unityWithFP;
+          this.currentExpenditure.total = current.quantity * current.time * current.dedication * current.unityWithFP;
+        } else {
+          this.currentExpenditure.total = current.quantity * current.time * current.dedication * current.unityValue;
+        }
       } else {
-        this.currentExpenditure.totalgi = current.quantity * current.time * current.dedication * current.unityValue;
+        this.currentExpenditure.totalWithoutFP = current.quantity * current.dedication * current.unityValue;
+        if(this.fpNeeded) {
+          this.currentExpenditure.unityWithFP = current.unityValue * current.fp;
+          this.currentExpenditure.totalWithFP = current.quantity * current.dedication * current.unityWithFP;
+          this.currentExpenditure.total = current.quantity * current.dedication * current.unityWithFP;
+        } else {
+          this.currentExpenditure.total = current.quantity * current.dedication * current.unityValue;
+        }
       }
-    } else if(current.time) {
+    } else if(this.timeNeeded && current.time != 0) {
       this.currentExpenditure.totalWithoutFP = current.quantity * current.time * current.unityValue;
-      if(current.fp) {
+      if(this.fpNeeded) {
         this.currentExpenditure.unityWithFP = current.unityValue * current.fp;
         this.currentExpenditure.totalWithFP = current.quantity * current.time * current.unityWithFP;
         this.currentExpenditure.total = current.quantity * current.time * current.unityWithFP;
@@ -152,7 +168,7 @@ export class DialogBudgetItemComponent implements OnInit {
       }
     } else {
       this.currentExpenditure.totalWithoutFP = current.quantity * current.unityValue;
-      if(current.fp) {
+      if(this.fpNeeded) {
         this.currentExpenditure.unityWithFP = current.unityValue * current.fp;
         this.currentExpenditure.totalWithFP = current.quantity * current.unityWithFP;
         this.currentExpenditure.total = current.quantity * current.unityWithFP;
@@ -162,26 +178,41 @@ export class DialogBudgetItemComponent implements OnInit {
     }
   }
 
-  createItem() {
-    let data: Expenditure = {
-      comment: this.form.controls['comment'].value,
-      contrated: false,
-      description: this.form.controls['description'].value,
-      quantity: this.form.controls['quantity'].value,
-      unityValue: this.form.controls['unity'].value,
-      total: 0
-    }
+  canSubmit() {
+    return  !this.form.controls['description'].hasError('required') &&
+            !this.form.controls['quantity'].hasError('required') &&
+            !this.form.controls['unity'].hasError('required') &&
+            !this.form.controls['unityValue'].hasError('required');
+  }
 
+  createItem() {
     this.dialogRef.close({
-      data: data});
+      data: {
+        expenditure: this.currentExpenditure,
+        page: this.data.page
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    //Falta refinar :)
   }
 
   deleteItem() {
-    let dialogRef = this.dialog.open(FooterComponent, {
+    const title = `Eliminar ${this.currentExpenditure.description}`
+    const msg = `¿Está seguro que desea eliminar el gasto de <b>${this.currentExpenditure.description}</b> con valor de ${this.currentExpenditure.total}?`
+    let dialogRef = this.dialog.open(DialogConfirmComponent, {
       data: {
-        page: this.params['budgetItem']
+        type: YES_NO_DIALOG,
+        title: title,
+        message: msg
       }
     });
+    dialogRef
+      .afterClosed()
+      .subscribe(res => {
+        res ? this.dialogRef.close() : null;
+      });
   }
 
 }

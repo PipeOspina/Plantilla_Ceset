@@ -1,55 +1,52 @@
 <form [formGroup]="this.form" class="normal-form" *ngIf="charged">
-    <div class="controls-form">
-      <input type="hidden" formControlName="$key">
-      <mat-form-field>
-        <mat-select placeholder="Descripcion del Gasto" formControlName="description" required>
-          <mat-option>--</mat-option>
-          <mat-option *ngFor="let description of this.type.description" [value]="description">
-            {{description}}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="form.controls['description'].hasError('required')">Holiwis</mat-error>
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput (keyup)="quantityKeyUp()" (click)="quantityKeyUp()" formControlName="quantity" placeholder="Cantidad" type="number" required>
-        <mat-error *ngIf="form.controls['quantity'].hasError('required')">Holiwis</mat-error>
-      </mat-form-field>
-      <mat-form-field>
-        <mat-select placeholder="Unidad de Medida" formControlName="unity" required>
-          <mat-option>--</mat-option>
-          <mat-option *ngFor="let unity of this.type.unity" [value]="unity">
-            {{unity}}
-          </mat-option>
-        </mat-select>
-        <mat-error *ngIf="form.controls['unity'].hasError('required')">Holiwis</mat-error>
-      </mat-form-field>
-      <mat-form-field *ngIf="this.timeNeeded">
-        <input matInput (keyup)="timeKeyUp()" (click)="timeKeyUp()" formControlName="time" placeholder="Tiempo" required>
-        <mat-error *ngIf="form.controls['time'].hasError('required')"></mat-error>
-      </mat-form-field>
-      <mat-form-field *ngIf="this.dedicationNeeded">
-        <input matInput (keyup)="dedicationKeyUp()" (click)="dedicationKeyUp()" formControlName="dedication" class="right-align" placeholder="Dedicación (%)" type="number" required>
-        <span matSuffix>%</span>
-        <mat-error *ngIf="form.controls['dedication'].hasError('required')"></mat-error>
-      </mat-form-field>
-      <mat-form-field>
-        <input matInput (keyup)="unityValueKeyUp()" (click)="unityValueKeyUp()" formControlName="unityValue" placeholder="Valor Unitario" type="number" required>
-        <mat-error *ngIf="form.controls['unityValue'].hasError('required')"></mat-error>
-      </mat-form-field>
-      <div *ngIf="this.fpNeeded">
-        <p class="label">Valor Total sin FP</p><p class="value">{{parseMoney(currentExpenditure.totalWithoutFP)}}</p>
-        <p class="label">FP</p><p class="value">{{currentExpenditure.fp}}</p>
-        <p class="label">Valor Unitario con FP</p><p class="value">{{parseMoney(currentExpenditure.unityWithFP)}}</p>
-      </div>
-      <p class="label"><b>Valor Total<div class="inline" *ngIf="this.fpNeeded"> con FP</div></b></p><p class="value"><b>{{parseMoney(currentExpenditure.total)}}</b></p>
-      <br><br>
-      <mat-form-field>
-        <textarea matInput formControlName="comment" placeholder="Observaciones" required></textarea>
-        <mat-error *ngIf="form.controls['comment'].hasError('required')"></mat-error>
-      </mat-form-field>
-      <br>
-      <button class="button" *ngIf="this.isCreate" (click)="createItem()" mat-raised-button color="primary">Crear</button>
-      <button class="button" *ngIf="this.isEdit" (click)="editItem()" mat-raised-button color="primary">Guardar</button>
-      <button class="button" *ngIf="this.isEdit" (click)="deleteItem()" mat-raised-button color="warn">Eliminar</button>
+  <div class="controls-form">
+    <input type="hidden" formControlName="$key">
+    <mat-form-field class="form-field">
+      <mat-select placeholder="Descripcion del Gasto" [selected]="selected()" formControlName="description" required>
+        <mat-option>--</mat-option>
+        <mat-option *ngFor="let description of this.type.description" [value]="description">
+          {{description}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls['description'].hasError('required')">Selecciona una Descripción del Gasto</mat-error>
+    </mat-form-field>
+    <mat-form-field class="form-field">
+      <input matInput (keyup)="quantityKeyUp()" (click)="quantityKeyUp()" formControlName="quantity" placeholder="Cantidad" type="number" required>
+      <mat-error *ngIf="form.controls['quantity'].hasError('required')">Ingresa la Cantidad</mat-error>
+    </mat-form-field>
+    <mat-form-field class="form-field">
+      <mat-select placeholder="Unidad de Medida" formControlName="unity" required>
+        <mat-option>--</mat-option>
+        <mat-option *ngFor="let unity of this.type.unity" [value]="unity">
+          {{unity}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="form.controls['unity'].hasError('required')">Selecciona la Unidad de Medida</mat-error>
+    </mat-form-field>
+    <mat-form-field *ngIf="this.timeNeeded" class="form-field">
+      <input matInput (keyup)="timeKeyUp()" (click)="timeKeyUp()" formControlName="time" placeholder="Tiempo">
+    </mat-form-field>
+    <mat-form-field *ngIf="this.dedicationNeeded" class="form-field">
+      <input matInput (keyup)="dedicationKeyUp()" (click)="dedicationKeyUp()" formControlName="dedication" class="right-align" placeholder="Dedicación (%)" type="number">
+      <p class="percent-icon" matSuffix>%</p>
+    </mat-form-field>
+    <mat-form-field class="form-field">
+      <input matInput (keyup)="unityValueKeyUp()" (click)="unityValueKeyUp()" formControlName="unityValue" placeholder="Valor Unitario" type="number" required>
+      <mat-error *ngIf="form.controls['unityValue'].hasError('required')">Ingresa el Valor de la Unidad</mat-error>
+    </mat-form-field>
+    <div *ngIf="this.fpNeeded">
+      <p class="label">Valor Total sin FP</p><p class="value">{{parseMoney(currentExpenditure.totalWithoutFP)}}</p>
+      <p class="label">FP</p><p class="value">{{currentExpenditure.fp.toFixed(1).toString().replace('.', ',')}}</p>
+      <p class="label">Valor Unitario con FP</p><p class="value">{{parseMoney(currentExpenditure.unityWithFP)}}</p>
     </div>
-  </form>
+    <p class="label"><b>Valor Total<div class="inline" *ngIf="this.fpNeeded"> con FP</div></b></p><p class="value"><b>{{parseMoney(currentExpenditure.total)}}</b></p>
+    <br><br>
+    <mat-form-field class="form-field">
+      <textarea matInput formControlName="comment" placeholder="Observaciones"></textarea>
+    </mat-form-field>
+    <br>
+    <button class="button" *ngIf="this.isCreate" (click)="createItem()" mat-raised-button color="primary" [disabled]="!canSubmit()">Crear</button>
+    <button class="buttons" *ngIf="this.isEdit" (click)="deleteItem()" mat-raised-button color="warn">Eliminar</button>
+    <button class="buttons" *ngIf="this.isEdit" (click)="editItem()" mat-raised-button color="primary" [disabled]="!canSubmit()">Guardar</button>
+  </div>
+</form>

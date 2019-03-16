@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DialogFinancialAnalysisComponent } from '../dialog-financial-analysis/dialog-financial-analysis.component';
 import { DialogDiscountComponent } from '../dialog-discount/dialog-discount.component';
 import { ActivityService } from '../../servicios/activity.service';
+import { ITEMS } from '../../modelos/budget';
 
 @Component({
   selector: 'app-budget',
@@ -88,6 +89,14 @@ export class BudgetComponent implements OnInit {
         page = '';
         break;
     }
+
+    if(!this.activityService.activity.budget) {
+      this.activityService.activity.budget = {
+        id: this.activityService.activity.id,
+        items: ITEMS
+      }
+    }
+
     this.router.url == '/inicio/portafolio/crear/presupuesto' ?
     this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]) :
     this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
@@ -106,7 +115,6 @@ export class BudgetComponent implements OnInit {
   total: number = 0;
 
   ngOnInit() {
-    console.log('Se ejecutó el ngOnInit()');
     this.sub = this.route.params.subscribe(params => { this.params = params });
     if(this.params['code']) {
       const budget = this.activityService.activities[this.params['code'] - 1].budget;
@@ -160,11 +168,18 @@ export interface Item {
 }
 
 export function parseValue(value: number): string {
-  const strValue: string = value.toString();
-  const endSub: string = strValue.substr(strValue.length - 3, 3);
-  const midSub: string = strValue.substr(strValue.length - 6, 3);
-  const startMidSub: string = strValue.substr(strValue.length - 9, 3);
-  const startSub: string = strValue.substr(strValue.length - 12, 3);
+  let strValue: string = value.toString();
+  let endSub: string = strValue.substr(strValue.length - 3, 3);
+  let midSub: string = strValue.substr(strValue.length - 6, 3);
+  let startMidSub: string = strValue.substr(strValue.length - 9, 3);
+  let startSub: string = strValue.substr(strValue.length - 12, 3);
+  if(Number(value) === value && value % 1 !== 0) {
+    strValue = value.toFixed(2).toString().replace('.', ',');
+    endSub = strValue.substr(strValue.length - 6, 6);
+    midSub = strValue.substr(strValue.length - 9, 6);
+    startMidSub = strValue.substr(strValue.length - 12, 6);
+    startSub = strValue.substr(strValue.length - 15, 6);
+  }
 
   if(value < 1000) {
     return strValue;

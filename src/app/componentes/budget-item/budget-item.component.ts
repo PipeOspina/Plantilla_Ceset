@@ -120,20 +120,44 @@ export class BudgetItemComponent implements OnInit {
       console.log(this.budgetItemDataSource.data);
       console.log(this.budgetItemData, ' el console log'); 
       this.somethinThere = true;*/
-      const data: Expenditure = result.data;
+      const data: Expenditure = result.data.expenditure;
 
       if(result) {
+        this.budgetItemData = [];
         if(this.currentActivity.budget.items[this.getPage()].expenditures) {
-
+          this.currentActivity.budget.items[this.getPage()].expenditures.push(data);
         } else {
           this.currentActivity.budget.items[this.getPage()].expenditures = [data];
         }
+    
+        let auxBudgetItemData: BudgetItem[] = [];
+        
+        this.currentActivity.budget.items[this.getPage()].expenditures.forEach(expenditure => {
+          const budgetItem: BudgetItem = {
+            id: this.auxId,
+            name: expenditure.description,
+            quantity: expenditure.quantity,
+            realCost: 0,
+            value: expenditure.total
+          };
+
+          console.log(expenditure.description);
+
+          auxBudgetItemData.push(budgetItem);
+        });
+
+        this.budgetItemData = auxBudgetItemData;
+        this.budgetItemDataSource = new MatTableDataSource(auxBudgetItemData);
+
+        this.somethinThere = true;
+
+        console.log(this.budgetItemData);
+
+        this.auxId++;
       } else {
         console.log('no hubo resultado');
       }
     });
-
-    this.auxId++;
   }
 
   backClicked = false;
@@ -229,15 +253,17 @@ export class BudgetItemComponent implements OnInit {
     } else if(this.activityService.activity) {
       this.currentActivity = this.activityService.activity;
       if(this.currentActivity.budget) {
-        this.somethinThere = true;
-        this.exist = true;
-        for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
-          let currentExp = this.currentActivity.budget.items[value].expenditures[i]
-          this.budgetItemData[i].id = i;
-          this.budgetItemData[i].name = currentExp.description;
-          this.budgetItemData[i].quantity = currentExp.quantity;
-          this.budgetItemData[i].realCost = currentExp.realCost;
-          this.budgetItemData[i].value = currentExp.total;
+        if(this.currentActivity.budget.items[value].expenditures) {
+          this.somethinThere = true;
+          this.exist = true;
+          for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
+            let currentExp = this.currentActivity.budget.items[value].expenditures[i]
+            this.budgetItemData[i].id = i;
+            this.budgetItemData[i].name = currentExp.description;
+            this.budgetItemData[i].quantity = currentExp.quantity;
+            this.budgetItemData[i].realCost = currentExp.realCost;
+            this.budgetItemData[i].value = currentExp.total;
+          }
         }
       } else {
         this.currentActivity.budget = {
