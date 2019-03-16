@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Item } from '../budget/budget.component';
+import { Item, parseValue } from '../budget/budget.component';
 import { FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatTableDataSource, MatDialog } from '@angular/material';
@@ -42,6 +42,10 @@ export class BudgetItemComponent implements OnInit {
   budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
 
   isOtherSelected = false;
+
+  parseValue(value: string) {
+    return parseValue(parseInt(value));
+  }
 
   showDataForm() {
     let page: string;
@@ -89,6 +93,18 @@ export class BudgetItemComponent implements OnInit {
       if(page !== this.params['budgetItem']) {
         this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
         this.isOtherSelected = true;
+        if(this.activityService.activity.budget.items[this.itemControl.value].expenditures) {
+          this.setExpenditures();
+          this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
+          setTimeout(() => {
+            this.somethinThere = true;
+          }, 100);
+        } else {
+          this.budgetItemDataSource = new MatTableDataSource(null);
+          setTimeout(() => {
+            this.somethinThere = false;
+          }, 100);
+        }
       }
     }
   }
@@ -108,46 +124,19 @@ export class BudgetItemComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      /*this.budgetItemData.push({
-        id: this.auxId,
-        name: result.data.controls['description'].value,
-        quantity: result.data.controls['quantity'].value,
-        realCost: 0,
-        value: result.data.controls['unityValue'].value
-      });
-
-      this.budgetItemDataSource.data = this.budgetItemData;
-      console.log(this.budgetItemDataSource.data);
-      console.log(this.budgetItemData, ' el console log'); 
-      this.somethinThere = true;*/
-      const data: Expenditure = result.data.expenditure;
-
       if(result) {
+        const data: Expenditure = result.data.expenditure;
         this.budgetItemData = [];
-        if(this.currentActivity.budget.items[this.getPage()].expenditures) {
+        if(this.activityService.activity.budget.items[this.getPage()].expenditures) {
           this.currentActivity.budget.items[this.getPage()].expenditures.push(data);
         } else {
           this.currentActivity.budget.items[this.getPage()].expenditures = [data];
         }
-    
-        let auxBudgetItemData: BudgetItem[] = [];
         
-        this.currentActivity.budget.items[this.getPage()].expenditures.forEach(expenditure => {
-          const budgetItem: BudgetItem = {
-            id: this.auxId,
-            name: expenditure.description,
-            quantity: expenditure.quantity,
-            realCost: 0,
-            value: expenditure.total
-          };
-
-          console.log(expenditure.description);
-
-          auxBudgetItemData.push(budgetItem);
-        });
-
-        this.budgetItemData = auxBudgetItemData;
-        this.budgetItemDataSource = new MatTableDataSource(auxBudgetItemData);
+        this.activityService.activity.budget.items[this.getPage()].expenditures = this.currentActivity.budget.items[this.getPage()].expenditures;
+        this.setExpenditures(true);
+        
+        this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
 
         this.somethinThere = true;
 
@@ -158,6 +147,48 @@ export class BudgetItemComponent implements OnInit {
         console.log('no hubo resultado');
       }
     });
+  }
+
+  setExpenditures(current?) {
+    if(current) {
+      this.activityService.activity.budget.items[this.getPage()].expenditures.forEach(expenditure => {
+        const budgetItem: BudgetItem = {
+          id: expenditure.id,
+          name: expenditure.description,
+          quantity: expenditure.quantity,
+          realCost: 0,
+          value: expenditure.total
+        };
+
+        let isThere = false;
+        this.budgetItemData.forEach(item => {
+          if(item.id == expenditure.id && !isThere) {
+            isThere = true;
+          }
+        });
+        if(!isThere)
+          this.budgetItemData.push(budgetItem);
+      });
+    } else {
+      this.activityService.activity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
+        const budgetItem: BudgetItem = {
+          id: this.auxId,
+          name: expenditure.description,
+          quantity: expenditure.quantity,
+          realCost: 0,
+          value: expenditure.total
+        };
+
+        let isThere = false;
+        this.budgetItemData.forEach(item => {
+          if(item.id == expenditure.id && !isThere) {
+            isThere = true;
+          }
+        });
+        if(!isThere)
+          this.budgetItemData.push(budgetItem);
+      });
+    }
   }
 
   backClicked = false;

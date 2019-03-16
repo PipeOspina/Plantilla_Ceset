@@ -17,6 +17,7 @@ export interface Item {
 }
 
 export interface Expenditure {
+    id: number,
     description: string;
     quantity: number;
     time?: number;

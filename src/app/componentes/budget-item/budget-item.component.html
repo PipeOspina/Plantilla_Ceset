@@ -1,7 +1,7 @@
 <mat-card class="container">
   <div class="select">
     <mat-form-field>
-      <mat-select placeholder="Favorite food" [formControl]="itemControl" [selectionChange]="showDataForm()" required>
+      <mat-select placeholder="Favorite food" [formControl]="itemControl" [selected]="showDataForm()" required>
         <mat-option *ngFor="let item of budgetData" [value]="item.id">
           {{ item.name }}
         </mat-option>
@@ -9,7 +9,7 @@
     </mat-form-field>
   </div>
 
-  <mat-card class="table" *ngIf="somethinThere">
+  <mat-card class="table" *ngIf="this.activityService.activity.budget.items[this.itemControl.value].expenditures">
     <mat-table #table [dataSource]="budgetItemDataSource">
       <!-- Name Column -->
       <ng-container matColumnDef="name">
@@ -20,26 +20,24 @@
       <!-- Value Column -->
       <ng-container matColumnDef="quant">
         <mat-header-cell *matHeaderCellDef> Cantidad </mat-header-cell>
-        <mat-cell *matCellDef="let item"> {{item.quantity}} </mat-cell>
+        <mat-cell *matCellDef="let item"> {{parseValue(item.quantity)}} </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="value">
         <mat-header-cell *matHeaderCellDef> Valor Presupuestado </mat-header-cell>
-        <mat-cell *matCellDef="let item"> {{item.value}} </mat-cell>
+        <mat-cell *matCellDef="let item"> ${{parseValue(item.value)}} </mat-cell>
       </ng-container>
 
       <ng-container matColumnDef="cost">
         <mat-header-cell *matHeaderCellDef> Costo Real </mat-header-cell>
-        <mat-cell class="cell" *matCellDef="let item"> {{item.realCost}} <button class="button" mat-mini-fab color="warn"><mat-icon>delete</mat-icon></button> </mat-cell>
+        <mat-cell *matCellDef="let item"> ${{parseValue(item.realCost)}} </mat-cell>
       </ng-container>
 
       <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
       <mat-row (click)="openDialog('edit', row)" (mouseenter)="this.mouseHovering = true" (mouseleave)="this.mouseHovering = false" class="item" *matRowDef="let row; columns: displayedColumns;"></mat-row>
     </mat-table>
-
-    <button mat-fab color="primary" class="add-button" (click)="openDialog('create')"><mat-icon>add</mat-icon></button>
   </mat-card>
-  <button mat-raised-button color="primary" *ngIf="!somethinThere" class="full" (click)="openDialog('create')">Agregar Gasto</button>
+  <button mat-raised-button color="primary" class="full" (click)="openDialog('create')">Agregar Gasto</button>
   <div class="full">
     <button mat-raised-button color="primary" (click)="back()">Volver</button>
     <button mat-raised-button color="primary" (click)="save()">Guardar</button>

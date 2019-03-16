@@ -4,7 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material';
 import { FooterComponent } from '../footer/footer.component';
 import { BudgetItem } from '../budget-item/budget-item.component';
-import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER, Expenditure } from '../../modelos/budget';
+import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER, Expenditure, ITEMS } from '../../modelos/budget';
 import { Item } from '../../modelos/budget';
 import { ActivityService } from '../../servicios/activity.service';
 import { parseValue } from '../budget/budget.component';
@@ -19,8 +19,10 @@ export class DialogBudgetItemComponent implements OnInit {
   form: FormGroup;
 
   charged = false;
+  page: number;
 
   currentExpenditure: Expenditure = {
+    id: 0,
     comment: '',
     contrated: false,
     description: '',
@@ -67,39 +69,50 @@ export class DialogBudgetItemComponent implements OnInit {
         this.timeNeeded = true;
         this.dedicationNeeded = true;
         this.fpNeeded = true;
+        this.page = 0;
         break;
       case 'materiales':
         this.type = MATERIAL;
+        this.page = 1;
         break;
       case 'equipos':
         this.type = EQUIP;
         this.timeNeeded = true;
+        this.page = 2;
         break;
       case 'transporte':
         this.type = TRANSPORT;
         this.timeNeeded = true;
+        this.page = 3;
         break;
       case 'gastronomia':
         this.type = GASTRONOMY;
+        this.page = 4;
         break;
       case 'comercial':
         this.type = COMERCIAL;
+        this.page = 5;
         break;
       case 'comunicaciones':
         this.type = COMUNICATION;
+        this.page = 6;
         break;
       case 'locaciones':
         this.type = LOCATION;
         this.timeNeeded = true;
+        this.page = 7;
         break;
       case 'software':
         this.type = SOFTWARE;
+        this.page = 8;
         break;
       case 'otros':
         this.type = OTHER;
+        this.page = 9;
         break;
       default:
         this.type = OTHER;
+        this.page = 9;
         break;
     };
 
@@ -186,6 +199,9 @@ export class DialogBudgetItemComponent implements OnInit {
   }
 
   createItem() {
+    if(this.activityService.activity.budget.items[this.page].expenditures) {
+      this.currentExpenditure.id = this.activityService.activity.budget.items[this.page].expenditures.length;
+    }
     this.dialogRef.close({
       data: {
         expenditure: this.currentExpenditure,
