@@ -4,7 +4,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { DialogFinancialAnalysisComponent } from '../dialog-financial-analysis/dialog-financial-analysis.component';
 import { DialogDiscountComponent } from '../dialog-discount/dialog-discount.component';
 import { ActivityService } from '../../servicios/activity.service';
-import { ITEMS } from '../../modelos/budget';
+import { ITEMS, PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER } from '../../modelos/budget';
+import { DialogConfirmComponent, YES_NO_DIALOG } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-budget',
@@ -91,9 +92,23 @@ export class BudgetComponent implements OnInit {
     }
 
     if(!this.activityService.activity.budget) {
+      PERSONAL.expenditures = null;
+      MATERIAL.expenditures = null;
+      EQUIP.expenditures = null;
+      TRANSPORT.expenditures = null;
+      GASTRONOMY.expenditures = null;
+      COMERCIAL.expenditures = null;
+      COMUNICATION.expenditures = null;
+      LOCATION.expenditures = null;
+      SOFTWARE.expenditures = null;
+      OTHER.expenditures = null;
+
+      const items = [
+        PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER
+      ]
       this.activityService.activity.budget = {
         id: this.activityService.activity.id,
-        items: ITEMS
+        items: items
       }
     }
 
@@ -137,7 +152,9 @@ export class BudgetComponent implements OnInit {
       
       this.activityService.activities[this.params['code'] - 1].budget = budget;
     } else if(this.activityService.activity) {
+      console.log(this.activityService.activity);
       if(this.activityService.activity.budget) {
+        console.log(this.activityService.activity.budget);
         const budget = this.activityService.activity.budget;
         for(let i = 0; i < budget.items.length; i++){
           this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
@@ -156,6 +173,35 @@ export class BudgetComponent implements OnInit {
         budget.total = this.total;
         budget.unexpected = this.unexpect;
       }
+    }
+  }
+
+  cancel() {
+    const dialogRef = this.dialog.open(DialogConfirmComponent, {
+      data: {
+        type: YES_NO_DIALOG,
+        title: 'Cancelar la creación del presupuesto',
+        message: '¿Está seguro que desea cancelar la creación del presupuesto?'
+      }
+    });
+    dialogRef.afterClosed().subscribe(res => {
+      if(res) {
+        this.activityService.activity.budget = null;
+        if(this.params['code']) {
+          this.router.navigate([`inicio/portafolio/editar/${this.params['code']}`]);
+        } else {
+          this.router.navigate([`inicio/portafolio/crear`]);
+        }
+      }
+    });
+  }
+
+  save() {
+    if(this.params['code']) {
+      this.router.navigate([`inicio/portafolio/editar/${this.params['code']}`]);
+    } else {
+      console.log(this.activityService.activity.budget);
+      this.router.navigate([`inicio/portafolio/crear`]);
     }
   }
 

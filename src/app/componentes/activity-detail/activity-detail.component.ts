@@ -5,6 +5,7 @@ import { AcademicActivity, createNewActivity } from '../../modelos/academicActiv
 import { ActivityService } from '../../servicios/activity.service';
 import * as XLSX from 'xlsx';
 import { User } from '../../modelos/user';
+import { parseValue } from '../budget/budget.component';
 
 @Component({
   selector: 'app-activity-detail',
@@ -77,20 +78,37 @@ export class ActivityDetailComponent implements OnInit {
     today.setSeconds(0);
     today.setMilliseconds(0);
 
-    const activity: AcademicActivity = {
-      id: (this.activityService.activities.length + 1),
-      name: this.generalForm.controls['name'].value,
-      coordinatorEmail: this.generalForm.controls['email'].value,
-      coordinatorName: this.generalForm.controls['coordinator'].value,
-      coordinatorPhone: this.generalForm.controls['phone'].value,
-      creationDate: today,
-      dependency: this.generalForm.controls['dependency'].value,
-      duration: this.generalForm.controls['duration'].value,
-      state: 'created',
-      type: this.generalForm.controls['type'].value,
-      investigationGroup: this.generalForm.controls['resGroup'].value
-    };
-    this.activityService.activity = activity;
+    if(!this.activityService.activity) {
+      const activity: AcademicActivity = {
+        id: (this.activityService.activities.length + 1),
+        name: this.generalForm.controls['name'].value,
+        coordinatorEmail: this.generalForm.controls['email'].value,
+        coordinatorName: this.generalForm.controls['coordinator'].value,
+        coordinatorPhone: this.generalForm.controls['phone'].value,
+        creationDate: today,
+        dependency: this.generalForm.controls['dependency'].value,
+        duration: this.generalForm.controls['duration'].value,
+        state: 'created',
+        type: this.generalForm.controls['type'].value,
+        investigationGroup: this.generalForm.controls['resGroup'].value
+      };
+      this.activityService.activity = activity;
+    } else {
+      this.activityService.activity = {
+        id: (this.activityService.activities.length + 1),
+        name: this.generalForm.controls['name'].value,
+        coordinatorEmail: this.generalForm.controls['email'].value,
+        coordinatorName: this.generalForm.controls['coordinator'].value,
+        coordinatorPhone: this.generalForm.controls['phone'].value,
+        creationDate: today,
+        dependency: this.generalForm.controls['dependency'].value,
+        duration: this.generalForm.controls['duration'].value,
+        state: 'created',
+        type: this.generalForm.controls['type'].value,
+        investigationGroup: this.generalForm.controls['resGroup'].value,
+        budget: this.activityService.activity.budget
+      }
+    }
     this.router.navigate([`inicio/portafolio/crear/presupuesto`]);
   }
 
@@ -99,6 +117,7 @@ export class ActivityDetailComponent implements OnInit {
   }
 
   cancel() {
+    this.activityService.activity = null;
     this.router.navigate(['inicio/portafolio']);
   }
 
@@ -118,7 +137,7 @@ export class ActivityDetailComponent implements OnInit {
     if(!activity && !this.createView)
       activity = this.activityService.activities[parseInt(this.params['code']) - 1];
 
-    if(!this.createView) {
+    if(activity) {
       let form: FormGroup = this.generalForm;
       form.controls['name'].setValue(activity.name);
       form.controls['type'].setValue(activity.type);
@@ -128,6 +147,10 @@ export class ActivityDetailComponent implements OnInit {
       form.controls['phone'].setValue(activity.coordinatorPhone);
       form.controls['email'].setValue(activity.coordinatorEmail);
       form.controls['duration'].setValue(activity.duration);
+      if(activity.budget) {
+        const budgetForm: FormGroup = this.budgetForm;
+        budgetForm.controls['value'].setValue(`$ ${parseValue(activity.budget.total)}`);
+      }
     }
   }
 

@@ -76,10 +76,10 @@
   <div class="full">
     <button mat-raised-button color="primary" class="three" (click)="showFinancialAnalysis()">Análisis Financiero</button>
     <button mat-raised-button color="primary" class="three" (click)="showDiscount()">Descuentos</button>
-    <button mat-raised-button color="primary" class="three">Reporte</button>
+    <button mat-raised-button color="primary" class="three" *ngIf="false">Reporte</button>
   </div>
   <div class="full">
-    <button mat-raised-button color="warn" class="two">Cancelar</button>
-    <button mat-raised-button color="primary" class="two">Guardar</button>
+    <button mat-raised-button color="warn" (click)="cancel()" class="two">Cancelar</button>
+    <button mat-raised-button color="primary" (click)="save()" class="two">Guardar</button>
   </div>
 </mat-card>

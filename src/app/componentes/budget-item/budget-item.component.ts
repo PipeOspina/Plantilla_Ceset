@@ -172,12 +172,16 @@ export class BudgetItemComponent implements OnInit {
 
   canShow(): boolean {
     let canShow = false;
-    if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
-      this.currentActivity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
-        if(!expenditure.eliminated) {
-          canShow = true;
+    if(this.currentActivity) {
+      if(this.currentActivity.budget) {
+        if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
+          this.currentActivity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
+            if(!expenditure.eliminated) {
+              canShow = true;
+            }
+          });
         }
-      });
+      }
     }
     return canShow;
   }
@@ -415,23 +419,27 @@ export class BudgetItemComponent implements OnInit {
       this.somethinThere = true;
       this.currentActivity = this.activityService.activities[this.params['code'] - 1];
 
-      if(this.currentActivity.budget.items[value].expenditures) {
-        this.somethinThere = true;
-        this.exist = true;
-        for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
-          let currentExp = this.currentActivity.budget.items[value].expenditures[i];
-          if(currentExp.approved){
-            this.budgetItemData.push({
-              id: currentExp.id,
-              name: currentExp.description,
-              quantity: currentExp.quantity,
-              realCost: currentExp.realCost,
-              value: currentExp.total
-            });
+      if(this.currentActivity) {
+        if(this.currentActivity.budget) {
+          if(this.currentActivity.budget.items[value].expenditures) {
+            this.somethinThere = true;
+            this.exist = true;
+            for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
+              let currentExp = this.currentActivity.budget.items[value].expenditures[i];
+              if(currentExp.approved){
+                this.budgetItemData.push({
+                  id: currentExp.id,
+                  name: currentExp.description,
+                  quantity: currentExp.quantity,
+                  realCost: currentExp.realCost,
+                  value: currentExp.total
+                });
+              }
+            }
           }
+        } else {
+          this.budgetItemData = [];
         }
-      } else {
-        this.budgetItemData = [];
       }
     } else if(this.activityService.activity) {
       this.currentActivity = this.activityService.activity;
@@ -461,9 +469,13 @@ export class BudgetItemComponent implements OnInit {
     } else {
       this.somethinThere = false;
     }
-    this.currentActivity.budget.items.forEach(item => {
-      item.total = null;
-    });
+    if(this.currentActivity) {
+      if(this.currentActivity.budget) {
+        this.currentActivity.budget.items.forEach(item => {
+          item.total = null;
+        });
+      }
+    }
   }
   exist = false;
 
