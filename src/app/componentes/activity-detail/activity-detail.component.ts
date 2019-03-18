@@ -6,6 +6,7 @@ import { ActivityService } from '../../servicios/activity.service';
 import * as XLSX from 'xlsx';
 import { User } from '../../modelos/user';
 import { parseValue } from '../budget/budget.component';
+import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER, Budget } from '../../modelos/budget';
 
 @Component({
   selector: 'app-activity-detail',
@@ -195,7 +196,7 @@ export class ActivityDetailComponent implements OnInit {
 
     if(data[i][0][3]) {
       if(data[i][0][3].toString() == BUDGET_FORMAT) {
-        console.log(data[i][0][3]);
+        this.setBudgetFormat(data[i]);
         return;
       }
     }
@@ -208,6 +209,41 @@ export class ActivityDetailComponent implements OnInit {
     }
 
     console.log('No se reconoce el formato que quieres importar :(');
+  }
+
+  setBudgetFormat(data: Array<Array<any>>) {
+    console.log(data);
+    PERSONAL.expenditures = null;
+    MATERIAL.expenditures = null;
+    EQUIP.expenditures = null;
+    TRANSPORT.expenditures = null;
+    GASTRONOMY.expenditures = null;
+    COMERCIAL.expenditures = null;
+    COMUNICATION.expenditures = null;
+    LOCATION.expenditures = null;
+    SOFTWARE.expenditures = null;
+    OTHER.expenditures = null;
+
+    const items = [
+      PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER
+    ]
+
+    this.activityService.activity.budget = {
+      id: this.activityService.activity.id,
+      items: items
+    }
+
+    const budget: Budget = this.activityService.activity.budget;
+    const ii = 19;
+    const jj = 5;
+    budget.items.forEach(item => {
+      for(let i = 0; i < 10; i++) {
+        for(let j = 0; j < 19; j++){
+          
+
+        }
+      }
+    });
   }
 
   setStartFormat(data: Array<Array<any>>) {
@@ -228,6 +264,36 @@ export class ActivityDetailComponent implements OnInit {
     controls['phone'].setValue(phone);
     controls['email'].setValue(email);
     controls['duration'].setValue(duration);
+
+    const controlsContract: { [key: string]: AbstractControl } = this.contractForm.controls;
+    const typeContract = data[28][0] ? data[28][0] : '';
+    const entity = data[28][1] ? data[28][1] : '';
+    const startDateContract = data[28][4] ? dateFromXlToJs(data[28][4]) : '';
+    const finishDateContract = data[28][7] ? dateFromXlToJs(data[28][7]) : '';
+    controlsContract['type'].setValue(typeContract);
+    controlsContract['entity'].setValue(entity);
+    controlsContract['startDate'].setValue(startDateContract);
+    controlsContract['endDate'].setValue(finishDateContract);
+
+    if(data[34][1]) {
+      const controlsCofinance: { [key: string]: AbstractControl } = this.cofinancingForm.controls;
+      const entityCofinance = data[34][4] ? data[34][4] : '';
+      const concept = data[34][6] ? data[34][6] : '';
+      const value = data[34][8] ? data[34][8] : '';
+      controlsCofinance['entity'].setValue(entityCofinance);
+      controlsCofinance['concept'].setValue(concept);
+      controlsCofinance['value'].setValue(value);
+    }
+
+    const controlsCohort: { [key: string]: AbstractControl } = this.cohortForm.controls;
+    const startDateCohort = data[24][1] ? dateFromXlToJs(data[24][1]) : '';
+    const finishDateCohort = data[24][6] ? dateFromXlToJs(data[24][6]) : '';
+    const REUNE = data[9][3] ? data[9][3] : '';
+    const SIGEP = data[10][3] ? data[10][3] : '';
+    controlsCohort['startDate'].setValue(startDateCohort);
+    controlsCohort['endDate'].setValue(finishDateCohort);
+    controlsCohort['reuneCode'].setValue(REUNE);
+    controlsCohort['sigepCode'].setValue(SIGEP);
   }
 
   getTypeOfActivity(data: Array<Array<any>>): string {

@@ -152,9 +152,7 @@ export class BudgetComponent implements OnInit {
       
       this.activityService.activities[this.params['code'] - 1].budget = budget;
     } else if(this.activityService.activity) {
-      console.log(this.activityService.activity);
       if(this.activityService.activity.budget) {
-        console.log(this.activityService.activity.budget);
         const budget = this.activityService.activity.budget;
         for(let i = 0; i < budget.items.length; i++){
           this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
@@ -200,7 +198,6 @@ export class BudgetComponent implements OnInit {
     if(this.params['code']) {
       this.router.navigate([`inicio/portafolio/editar/${this.params['code']}`]);
     } else {
-      console.log(this.activityService.activity.budget);
       this.router.navigate([`inicio/portafolio/crear`]);
     }
   }

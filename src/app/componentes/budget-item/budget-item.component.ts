@@ -155,9 +155,6 @@ export class BudgetItemComponent implements OnInit {
           this.currentActivity.budget.items[this.getPage()].expenditures = [data];
         }
 
-        console.log(data);
-        console.log(this.activityService.changes);
-
         this.setExpenditures();
         
         this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
