@@ -1,7 +1,7 @@
 import { Injectable, OnInit } from '@angular/core';
 import { AcademicActivity } from '../modelos/academicActivity';
 import { BudgetItem } from '../componentes/budget-item/budget-item.component';
-import { Expenditure } from '../modelos/budget';
+import { Expenditure, Item } from '../modelos/budget';
 
 @Injectable()
 export class ActivityService {
@@ -10,6 +10,8 @@ export class ActivityService {
   activities: AcademicActivity[];
 
   activity: AcademicActivity;
+
+  changes: { id: number, page: number, first: Expenditure }[] = [];
 
   currentBudgetItems: BudgetItem[];
 

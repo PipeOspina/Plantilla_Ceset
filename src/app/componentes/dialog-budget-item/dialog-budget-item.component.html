@@ -2,7 +2,7 @@
   <div class="controls-form">
     <input type="hidden" formControlName="$key">
     <mat-form-field class="form-field">
-      <mat-select placeholder="Descripcion del Gasto" [selected]="selected()" formControlName="description" required>
+      <mat-select placeholder="Descripcion del Gasto" [selected]="selectedDescription()" formControlName="description" required>
         <mat-option>--</mat-option>
         <mat-option *ngFor="let description of this.type.description" [value]="description">
           {{description}}
@@ -11,11 +11,11 @@
       <mat-error *ngIf="form.controls['description'].hasError('required')">Selecciona una Descripción del Gasto</mat-error>
     </mat-form-field>
     <mat-form-field class="form-field">
-      <input matInput (keyup)="quantityKeyUp()" (click)="quantityKeyUp()" formControlName="quantity" placeholder="Cantidad" type="number" required>
+      <input matInput (keyup)="quantityKeyUp()" (click)="quantityKeyUp()" formControlName="quantity" placeholder="Cantidad" type="number" min="0" required>
       <mat-error *ngIf="form.controls['quantity'].hasError('required')">Ingresa la Cantidad</mat-error>
     </mat-form-field>
     <mat-form-field class="form-field">
-      <mat-select placeholder="Unidad de Medida" formControlName="unity" required>
+      <mat-select placeholder="Unidad de Medida" [selected]="selectedUnity()" formControlName="unity" required>
         <mat-option>--</mat-option>
         <mat-option *ngFor="let unity of this.type.unity" [value]="unity">
           {{unity}}
@@ -24,14 +24,14 @@
       <mat-error *ngIf="form.controls['unity'].hasError('required')">Selecciona la Unidad de Medida</mat-error>
     </mat-form-field>
     <mat-form-field *ngIf="this.timeNeeded" class="form-field">
-      <input matInput (keyup)="timeKeyUp()" (click)="timeKeyUp()" formControlName="time" placeholder="Tiempo">
+      <input matInput (keyup)="timeKeyUp()" (click)="timeKeyUp()" formControlName="time" placeholder="Tiempo" type="number" min="0">
     </mat-form-field>
     <mat-form-field *ngIf="this.dedicationNeeded" class="form-field">
-      <input matInput (keyup)="dedicationKeyUp()" (click)="dedicationKeyUp()" formControlName="dedication" class="right-align" placeholder="Dedicación (%)" type="number">
+      <input matInput (keyup)="dedicationKeyUp()" (click)="dedicationKeyUp()" formControlName="dedication" class="right-align" placeholder="Dedicación (%)" type="number" min="0">
       <p class="percent-icon" matSuffix>%</p>
     </mat-form-field>
     <mat-form-field class="form-field">
-      <input matInput (keyup)="unityValueKeyUp()" (click)="unityValueKeyUp()" formControlName="unityValue" placeholder="Valor Unitario" type="number" required>
+      <input matInput (keyup)="unityValueKeyUp()" (click)="unityValueKeyUp()" formControlName="unityValue" placeholder="Valor Unitario" type="number" min="0" required>
       <mat-error *ngIf="form.controls['unityValue'].hasError('required')">Ingresa el Valor de la Unidad</mat-error>
     </mat-form-field>
     <div *ngIf="this.fpNeeded">
@@ -42,11 +42,11 @@
     <p class="label"><b>Valor Total<div class="inline" *ngIf="this.fpNeeded"> con FP</div></b></p><p class="value"><b>{{parseMoney(currentExpenditure.total)}}</b></p>
     <br><br>
     <mat-form-field class="form-field">
-      <textarea matInput formControlName="comment" placeholder="Observaciones"></textarea>
+      <textarea matInput formControlName="comment" (keyup)="commentKeyUp()" (click)="commentKeyUp()" placeholder="Observaciones"></textarea>
     </mat-form-field>
     <br>
     <button class="button" *ngIf="this.isCreate" (click)="createItem()" mat-raised-button color="primary" [disabled]="!canSubmit()">Crear</button>
     <button class="buttons" *ngIf="this.isEdit" (click)="deleteItem()" mat-raised-button color="warn">Eliminar</button>
-    <button class="buttons" *ngIf="this.isEdit" (click)="editItem()" mat-raised-button color="primary" [disabled]="!canSubmit()">Guardar</button>
+    <button class="buttons" *ngIf="this.isEdit" (click)="editItem()" mat-raised-button color="primary" type="submit" [disabled]="!canSubmit()">Guardar</button>
   </div>
 </form>

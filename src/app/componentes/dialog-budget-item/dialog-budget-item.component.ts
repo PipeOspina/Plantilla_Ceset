@@ -9,6 +9,7 @@ import { Item } from '../../modelos/budget';
 import { ActivityService } from '../../servicios/activity.service';
 import { parseValue } from '../budget/budget.component';
 import { DialogConfirmComponent, YES_NO_DIALOG } from '../dialog-confirm/dialog-confirm.component';
+import { AcademicActivity } from '../../modelos/academicActivity';
 
 @Component({
   selector: 'app-dialog-budget-item',
@@ -22,7 +23,7 @@ export class DialogBudgetItemComponent implements OnInit {
   page: number;
 
   currentExpenditure: Expenditure = {
-    id: 0,
+    id: 1,
     comment: '',
     contrated: false,
     description: '',
@@ -44,10 +45,19 @@ export class DialogBudgetItemComponent implements OnInit {
   isEdit: boolean = false;
   isCreate: boolean = false;
 
+  somethingChanged: boolean = false;
+
   sub: any;
   params: any;
 
-  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, @Inject(MAT_DIALOG_DATA) public data: any, private dialogRef: MatDialogRef<DialogBudgetItemComponent>, private activityService: ActivityService) { }
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    public dialog: MatDialog,
+    @Inject(MAT_DIALOG_DATA) public data: { activity?: AcademicActivity, row?: BudgetItem, page?: any, type?: any },
+    private dialogRef: MatDialogRef<DialogBudgetItemComponent>,
+    private activityService: ActivityService
+  ) { }
 
   ngOnInit() {
     setTimeout(() => {
@@ -116,6 +126,30 @@ export class DialogBudgetItemComponent implements OnInit {
         break;
     };
 
+
+    if(this.data.row) {
+      if(this.data.activity) {
+        this.data.activity.budget.items.forEach(item => {
+          if(item.expenditures) {
+            item.expenditures.forEach(expenditure => {
+              if(expenditure.id == this.data.row.id && item.id == this.page) {
+                setTimeout(() => {
+                  console.log('settimeout', expenditure);
+                  this.form.controls['description'].setValue(expenditure.description);
+                  this.form.controls['quantity'].setValue(expenditure.quantity);
+                  this.form.controls['time'].setValue(expenditure.time);
+                  this.form.controls['dedication'].setValue(expenditure.dedication * 100);
+                  this.form.controls['unity'].setValue(expenditure.unity);
+                  this.form.controls['unityValue'].setValue(expenditure.unityValue);
+                  this.form.controls['comment'].setValue(expenditure.comment);
+                  this.currentExpenditure = expenditure;
+                }, 50);
+              }
+            });
+          }
+        });
+      }
+    }
     this.isCreate = this.data.type === 'create' ? true : false;
     this.isEdit = !this.isCreate;
   }
@@ -124,8 +158,14 @@ export class DialogBudgetItemComponent implements OnInit {
     return `$${parseValue(value)}`;
   }
 
-  selected() {
+  selectedDescription() {
+    this.somethingChanged = true;
     this.currentExpenditure.description = this.form.controls['description'].value;
+  }
+
+  selectedUnity() {
+    this.somethingChanged = true;
+    this.currentExpenditure.unity = this.form.controls['unity'].value;
   }
 
   quantityKeyUp() {
@@ -148,7 +188,13 @@ export class DialogBudgetItemComponent implements OnInit {
     this.setValues();
   }
 
+  commentKeyUp() {
+    this.currentExpenditure.comment = this.form.controls['comment'].value;
+    this.setValues();
+  }
+
   setValues() {
+    this.somethingChanged = true;
     const current = this.currentExpenditure;
     if(this.dedicationNeeded && current.dedication != 0) {
       if(this.timeNeeded && current.time != 0) {
@@ -199,19 +245,91 @@ export class DialogBudgetItemComponent implements OnInit {
   }
 
   createItem() {
-    if(this.activityService.activity.budget.items[this.page].expenditures) {
-      this.currentExpenditure.id = this.activityService.activity.budget.items[this.page].expenditures.length;
+    if(this.data.activity.budget.items[this.page].expenditures) {
+      let bigger: number = 0;
+      this.data.activity.budget.items[this.page].expenditures.forEach(expenditure => {
+        if(expenditure.id > bigger) {
+          bigger = expenditure.id;
+        } else {
+          bigger++;
+        }
+
+        if(this.currentExpenditure.id > bigger) {
+          bigger = this.currentExpenditure.id;
+        } else {
+          bigger++;
+        }
+      });
+      this.currentExpenditure.id = bigger;
+      console.log('bigger: ', bigger, ' id: ', this.currentExpenditure.id);
+      this.currentExpenditure.approved = false;
     }
+
+    const auxExpenditure: Expenditure = {
+      approved: this.currentExpenditure.approved,
+      comment: this.currentExpenditure.comment,
+      contrated: this.currentExpenditure.contrated,
+      dedication: this.currentExpenditure.dedication,
+      description: this.currentExpenditure.description,
+      eliminated: this.currentExpenditure.eliminated,
+      fp: this.currentExpenditure.fp,
+      id: this.currentExpenditure.id,
+      logisticComment: this.currentExpenditure.logisticComment,
+      quantity: this.currentExpenditure.quantity,
+      realCost: this.currentExpenditure.realCost,
+      time: this.currentExpenditure.time,
+      total: this.currentExpenditure.total,
+      totalWithFP: this.currentExpenditure.totalWithFP,
+      totalWithoutFP: this.currentExpenditure.totalWithoutFP,
+      unity: this.currentExpenditure.unity,
+      unityValue: this.currentExpenditure.unityValue,
+      unityWithFP: this.currentExpenditure.unityWithFP,
+      created: true,
+      first: {
+        approved: this.currentExpenditure.approved,
+        comment: this.currentExpenditure.comment,
+        contrated: this.currentExpenditure.contrated,
+        dedication: this.currentExpenditure.dedication,
+        description: this.currentExpenditure.description,
+        eliminated: this.currentExpenditure.eliminated,
+        fp: this.currentExpenditure.fp,
+        id: this.currentExpenditure.id,
+        logisticComment: this.currentExpenditure.logisticComment,
+        quantity: this.currentExpenditure.quantity,
+        realCost: this.currentExpenditure.realCost,
+        time: this.currentExpenditure.time,
+        total: this.currentExpenditure.total,
+        totalWithFP: this.currentExpenditure.totalWithFP,
+        totalWithoutFP: this.currentExpenditure.totalWithoutFP,
+        unity: this.currentExpenditure.unity,
+        unityValue: this.currentExpenditure.unityValue,
+        unityWithFP: this.currentExpenditure.unityWithFP,
+        created: true,
+        first: null
+      }
+    }
+
     this.dialogRef.close({
       data: {
-        expenditure: this.currentExpenditure,
-        page: this.data.page
+        expenditure: auxExpenditure,
+        page: this.page,
+        id: auxExpenditure.id,
+        changed: true
       }
     });
   }
 
-  ngOnDestroy() {
-    //Falta refinar :)
+  editItem() {
+    this.currentExpenditure.approved = false;
+    this.currentExpenditure.created = false;
+    this.dialogRef.close({
+      data: {
+        expenditure: this.currentExpenditure,
+        page: this.page,
+        id: this.currentExpenditure.id,
+        changed: this.somethingChanged
+      }
+    });
   }
 
   deleteItem() {
@@ -227,7 +345,18 @@ export class DialogBudgetItemComponent implements OnInit {
     dialogRef
       .afterClosed()
       .subscribe(res => {
-        res ? this.dialogRef.close() : null;
+        if(res) {
+          this.currentExpenditure.eliminated = true;
+          this.currentExpenditure.created = false;
+          this.dialogRef.close({
+            data: {
+              expenditure: this.currentExpenditure,
+              page: this.page,
+              id: this.currentExpenditure.id,
+              changed: this.somethingChanged
+            }
+          });
+        }
       });
   }
 

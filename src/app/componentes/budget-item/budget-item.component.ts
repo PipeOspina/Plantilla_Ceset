@@ -9,7 +9,8 @@ import { ActivityService } from '../../servicios/activity.service';
 import { AcademicActivity } from '../../modelos/academicActivity';
 import { PlatformLocation } from '@angular/common';
 import { DialogConfirmComponent, YES_NO_DIALOG, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
-import { Expenditure } from '../../modelos/budget';
+import { Expenditure, Item as ItemBudget, Budget } from '../../modelos/budget';
+import { routerNgProbeToken } from '@angular/router/src/router_module';
 
 @Component({
   selector: 'app-budget-item',
@@ -20,6 +21,9 @@ export class BudgetItemComponent implements OnInit {
   itemControl = new FormControl('', [Validators.required]);
   
   displayedColumns = ['name', 'quant', 'value', 'cost'];
+  editedItems = [];
+
+  //changes: { id: number, page: number, first: Expenditure }[] = [];
 
   sub: any;
   params: any;
@@ -42,6 +46,8 @@ export class BudgetItemComponent implements OnInit {
   budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
 
   isOtherSelected = false;
+
+  currentActivity: AcademicActivity;
 
   parseValue(value: string) {
     return parseValue(parseInt(value));
@@ -84,42 +90,42 @@ export class BudgetItemComponent implements OnInit {
         page = 'otros';
         break;
     };
-    if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
-      if(page !== this.params['budgetItem']) {
-        this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
-        this.isOtherSelected = true;
-      }
-    } else {
-      if(page !== this.params['budgetItem']) {
-        this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
-        this.isOtherSelected = true;
-        if(this.activityService.activity.budget.items[this.itemControl.value].expenditures) {
-          this.setExpenditures();
-          this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
-          setTimeout(() => {
-            this.somethinThere = true;
-          }, 100);
-        } else {
-          this.budgetItemDataSource = new MatTableDataSource(null);
-          setTimeout(() => {
-            this.somethinThere = false;
-          }, 100);
+    setTimeout(() => {
+      if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
+        if(page !== this.params['budgetItem']) {
+          this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
+          this.isOtherSelected = true;
+        }
+      } else {
+        if(page !== this.params['budgetItem']) {
+          this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
+          this.isOtherSelected = true;
+          if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
+            this.setExpenditures();
+            this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
+            setTimeout(() => {
+              this.somethinThere = true;
+            }, 100);
+          } else {
+            this.budgetItemDataSource = new MatTableDataSource(null);
+            setTimeout(() => {
+              this.somethinThere = false;
+            }, 100);
+          }
         }
       }
-    }
+    }, 50);
   }
 
   somethinThere;
 
-  auxId = 0;
-
-  openDialog(type: string, row: any) {
-    console.log(this.budgetItemDataSource.data);
+  openDialog(type: string, row?: BudgetItem) {
     const dialogRef = this.dialog.open(DialogBudgetItemComponent, {
       data: {
         page: this.params['budgetItem'],
         type: type,
-        row: row
+        row: row,
+        activity: this.currentActivity
       }
     });
 
@@ -127,31 +133,60 @@ export class BudgetItemComponent implements OnInit {
       if(result) {
         const data: Expenditure = result.data.expenditure;
         this.budgetItemData = [];
-        if(this.activityService.activity.budget.items[this.getPage()].expenditures) {
-          this.currentActivity.budget.items[this.getPage()].expenditures.push(data);
+        if(this.currentActivity.budget.items[this.getPage()].expenditures) {
+          if(type == 'edit') {
+            this.currentActivity.budget.items[this.getPage()].expenditures.forEach(expenditure => {
+              if(result.data.id == expenditure.id) {
+                expenditure = data;
+                if(this.activityService.changes.length == 0) {
+                  this.activityService.changes.push({ id: data.id, page: this.getPage(), first: data.first });
+                } else {
+                  this.activityService.changes.forEach(change => {
+                    if(change.id != data.id && change.page != this.getPage())
+                      this.activityService.changes.push({ id: data.id, page: this.getPage(), first: data.first });
+                  });
+                }
+              }
+            })
+          } else {
+            this.currentActivity.budget.items[this.getPage()].expenditures.push(data);
+          }
         } else {
           this.currentActivity.budget.items[this.getPage()].expenditures = [data];
         }
-        
-        this.activityService.activity.budget.items[this.getPage()].expenditures = this.currentActivity.budget.items[this.getPage()].expenditures;
-        this.setExpenditures(true);
+
+        console.log(data);
+        console.log(this.activityService.changes);
+
+        this.setExpenditures();
         
         this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
 
         this.somethinThere = true;
-
-        console.log(this.budgetItemData);
-
-        this.auxId++;
-      } else {
-        console.log('no hubo resultado');
+        this.isSomethingNew = result.data.changed;
       }
     });
   }
 
-  setExpenditures(current?) {
-    if(current) {
-      this.activityService.activity.budget.items[this.getPage()].expenditures.forEach(expenditure => {
+  isSomethingNew = false;
+
+  canShow(): boolean {
+    let canShow = false;
+    if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
+      this.currentActivity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
+        if(!expenditure.eliminated) {
+          canShow = true;
+        }
+      });
+    }
+    return canShow;
+  }
+
+  setExpenditures() {
+    this.budgetItemData = [];
+
+    if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
+      this.currentActivity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
         const budgetItem: BudgetItem = {
           id: expenditure.id,
           name: expenditure.description,
@@ -161,39 +196,26 @@ export class BudgetItemComponent implements OnInit {
         };
 
         let isThere = false;
+        let isEliminated = false;
         this.budgetItemData.forEach(item => {
           if(item.id == expenditure.id && !isThere) {
             isThere = true;
           }
+          if(expenditure.eliminated) {
+            isEliminated = true;
+          }
         });
-        if(!isThere)
-          this.budgetItemData.push(budgetItem);
-      });
-    } else {
-      this.activityService.activity.budget.items[this.itemControl.value].expenditures.forEach(expenditure => {
-        const budgetItem: BudgetItem = {
-          id: this.auxId,
-          name: expenditure.description,
-          quantity: expenditure.quantity,
-          realCost: 0,
-          value: expenditure.total
-        };
 
-        let isThere = false;
-        this.budgetItemData.forEach(item => {
-          if(item.id == expenditure.id && !isThere) {
-            isThere = true;
-          }
-        });
-        if(!isThere)
+        if(!isThere && !isEliminated) {
           this.budgetItemData.push(budgetItem);
+        }
       });
     }
   }
 
   backClicked = false;
 
-  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService, public location: PlatformLocation) {
+  constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, public activityService: ActivityService, public location: PlatformLocation) {
     this.location.onPopState(() => {
       if(this.isOtherSelected && !this.backClicked) {
         dialog.open(DialogConfirmComponent, {
@@ -213,11 +235,136 @@ export class BudgetItemComponent implements OnInit {
   }
 
   back() {
-    this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+    if(this.isSomethingNew) {
+      let msgs: string[] = [];
+      let prevItem: string;
+      let title: string;
+      this.currentActivity.budget.items.forEach(item => {
+        if(item.expenditures) {
+          item.expenditures.forEach(expenditure => {
+            if(!expenditure.approved || expenditure.created || expenditure.eliminated) {
+              title = 'Al volver, eliges deshacer los cambios en los rubros:'
+              if(prevItem) {
+                if(item.name != prevItem) {
+                  msgs.push(`<h4>${item.name}</h4>`);
+                }
+              } else {
+                prevItem = item.name;
+                msgs.push(`<h4>${item.name}:</h4>`);
+              }
+              const type = expenditure.created ? '<i style="color:yellow;">Recién Creado</i>' : expenditure.eliminated ? '<i style="color:red;">Eliminado</>' : '<i>Modificado</i>';
+              msgs.push(`- <b>${expenditure.description}</b> por valor de <b>$${parseValue(expenditure.total)}</b> - (${type})<br />`);
+            }
+          });
+          prevItem = null;
+        }
+      });
+      const msg = msgs.join('');
+      const dialogRef = this.dialog.open(DialogConfirmComponent, {
+        data: {
+          type: YES_NO_DIALOG,
+          title: title,
+          message: msg
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(res => {
+        if(res) {
+          this.currentActivity.budget.items.forEach(item => {
+            if(item.expenditures) {
+              item.expenditures = item.expenditures.filter(exp => {
+                return exp.approved || !exp.created;
+              });
+            }
+          });
+          
+          for(let i = 0; i < this.currentActivity.budget.items.length; i++) {
+            if(this.currentActivity.budget.items[i].expenditures){
+              for(let j = 0; j < this.currentActivity.budget.items[i].expenditures.length; j++) {
+                if(this.currentActivity.budget.items[i].expenditures[j]){
+                  this.activityService.changes.forEach(change => {
+                    if(i == change.page && this.currentActivity.budget.items[i].expenditures[j].id == change.id) {
+                      this.currentActivity.budget.items[i].expenditures[j] = {
+                        approved: change.first.approved,
+                        contrated: change.first.contrated,
+                        unityValue: change.first.unityValue,
+                        unity: change.first.unity,
+                        time: change.first.time,
+                        quantity: change.first.quantity,
+                        eliminated: change.first.eliminated,
+                        description: change.first.description,
+                        dedication: change.first.dedication,
+                        comment: change.first.comment,
+                        realCost: change.first.realCost,
+                        totalWithFP: change.first.totalWithFP,
+                        fp: change.first.fp,
+                        id: change.first.id,
+                        logisticComment: change.first.logisticComment,
+                        total: change.first.total,
+                        totalWithoutFP: change.first.totalWithoutFP,
+                        unityWithFP: change.first.unityWithFP,
+                        created: change.first.created,
+                        first: {
+                          approved: change.first.approved,
+                          contrated: change.first.contrated,
+                          unityValue: change.first.unityValue,
+                          unity: change.first.unity,
+                          time: change.first.time,
+                          quantity: change.first.quantity,
+                          eliminated: change.first.eliminated,
+                          description: change.first.description,
+                          dedication: change.first.dedication,
+                          comment: change.first.comment,
+                          realCost: change.first.realCost,
+                          totalWithFP: change.first.totalWithFP,
+                          fp: change.first.fp,
+                          id: change.first.id,
+                          logisticComment: change.first.logisticComment,
+                          total: change.first.total,
+                          totalWithoutFP: change.first.totalWithoutFP,
+                          unityWithFP: change.first.unityWithFP,
+                          created: change.first.created,
+                          first: null
+                        }
+                      }
+                    }
+                  })
+                }
+              }
+            }
+          }
+          this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+        }
+      });
+    } else {
+      this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+    }
   }
 
   save() {
-    this.back();
+    this.currentActivity.budget.items.forEach(item => {
+      if(item.expenditures) {
+        item.expenditures = item.expenditures.filter(exp => {
+          return !exp.eliminated;
+        });
+        item.expenditures.forEach(expenditure => {
+          expenditure.approved = true;
+        });
+      }
+    });
+    
+    this.activityService.activity = this.currentActivity;
+    this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+  }
+
+  ngOnDestroy() {
+    this.currentActivity.budget.items.forEach(item => {
+      if(item.expenditures) {
+        item.expenditures.forEach(expenditure => {
+          item.total && expenditure.approved ? item.total += expenditure.total : item.total = expenditure.total;
+        });
+      }
+    });
   }
 
   getPage() {
@@ -269,14 +416,19 @@ export class BudgetItemComponent implements OnInit {
       this.currentActivity = this.activityService.activities[this.params['code'] - 1];
 
       if(this.currentActivity.budget.items[value].expenditures) {
+        this.somethinThere = true;
         this.exist = true;
         for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
-          let currentExp = this.currentActivity.budget.items[value].expenditures[i]
-          this.budgetItemData[i].id = i;
-          this.budgetItemData[i].name = currentExp.description;
-          this.budgetItemData[i].quantity = currentExp.quantity;
-          this.budgetItemData[i].realCost = currentExp.realCost;
-          this.budgetItemData[i].value = currentExp.total;
+          let currentExp = this.currentActivity.budget.items[value].expenditures[i];
+          if(currentExp.approved){
+            this.budgetItemData.push({
+              id: currentExp.id,
+              name: currentExp.description,
+              quantity: currentExp.quantity,
+              realCost: currentExp.realCost,
+              value: currentExp.total
+            });
+          }
         }
       } else {
         this.budgetItemData = [];
@@ -288,12 +440,16 @@ export class BudgetItemComponent implements OnInit {
           this.somethinThere = true;
           this.exist = true;
           for(let i = 0; i < this.currentActivity.budget.items[value].expenditures.length; i++) {
-            let currentExp = this.currentActivity.budget.items[value].expenditures[i]
-            this.budgetItemData[i].id = i;
-            this.budgetItemData[i].name = currentExp.description;
-            this.budgetItemData[i].quantity = currentExp.quantity;
-            this.budgetItemData[i].realCost = currentExp.realCost;
-            this.budgetItemData[i].value = currentExp.total;
+            let currentExp = this.currentActivity.budget.items[value].expenditures[i];
+            if(currentExp.approved){
+              this.budgetItemData.push({
+                id: currentExp.id,
+                name: currentExp.description,
+                quantity: currentExp.quantity,
+                realCost: currentExp.realCost,
+                value: currentExp.total
+              });
+            }
           }
         }
       } else {
@@ -305,9 +461,10 @@ export class BudgetItemComponent implements OnInit {
     } else {
       this.somethinThere = false;
     }
+    this.currentActivity.budget.items.forEach(item => {
+      item.total = null;
+    });
   }
-
-  currentActivity: AcademicActivity;
   exist = false;
 
 }

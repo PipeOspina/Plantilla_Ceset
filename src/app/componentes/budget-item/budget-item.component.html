@@ -9,7 +9,7 @@
     </mat-form-field>
   </div>
 
-  <mat-card class="table" *ngIf="this.activityService.activity.budget.items[this.itemControl.value].expenditures">
+  <mat-card class="table" *ngIf="canShow()">
     <mat-table #table [dataSource]="budgetItemDataSource">
       <!-- Name Column -->
       <ng-container matColumnDef="name">

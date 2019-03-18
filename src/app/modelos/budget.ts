@@ -10,13 +10,16 @@ export interface Budget {
 }
 
 export interface Item {
+    name?: string,
     description: string[];
     unity: string[];
     expenditures?: Expenditure[];
     total?: number;
+    id?: number;
 }
 
 export interface Expenditure {
+    first?: Expenditure;
     id: number,
     description: string;
     quantity: number;
@@ -32,6 +35,10 @@ export interface Expenditure {
     logisticComment?: string;
     contrated: boolean;
     realCost?: number;
+    approved?: boolean;
+    unity?: string;
+    eliminated?: boolean;
+    created?: boolean;
 }
 
 export interface Contribution {
@@ -117,7 +124,9 @@ export function createNewBudget(id: number): Budget {
 const RATES: string[] = ['Publico UdeA + PP', 'Grupos + PP', 'Público UdeA', 'Grupos', 'Tarifa Plena', 'Tarifa Plena + PP', 'Especiales'];
 
 export const PERSONAL: Item = {
-    description: [
+  id: 0,
+  name: 'Personal/Recurso Humano',
+  description: [
       'Auxiliar',
       'Auxiliar Logístico',
       'Contrato (CIS)',
@@ -141,6 +150,8 @@ export const PERSONAL: Item = {
   }
   
   export const MATERIAL: Item = {
+    id: 1,
+    name: 'Materiales/Suministros/Obra Fisica',
     description: [
       'Agendas',
       'Baterías',
@@ -213,6 +224,8 @@ export const PERSONAL: Item = {
   }
   
   export const EQUIP: Item = {
+    id: 2,
+    name: 'Equipos/Maquinaria',
     description: [
       'Adquisición Cámara Fotográfica',
       'Adquisición Computador Escritorio',
@@ -255,6 +268,8 @@ export const PERSONAL: Item = {
   }
   
   export const TRANSPORT: Item = {
+    id: 3,
+    name: 'Transporte/Sostenimiento en Campo',
     description: [
       'Tiquetes avión',
       'Transporte Bus',
@@ -274,6 +289,8 @@ export const PERSONAL: Item = {
   }
   
   export  const GASTRONOMY: Item = {
+    id: 4,
+    name: 'Gastronomía',
     description: [
       'Almuerzo con Servicio',
       'Almuerzo Empacado',
@@ -294,6 +311,8 @@ export const PERSONAL: Item = {
   }
   
   export  const COMERCIAL: Item = {
+    id: 5,
+    name: 'Estrategia Comunicacional/Comercial',
     description: [
       'Afiche',
       'Agenda Programática',
@@ -338,6 +357,8 @@ export const PERSONAL: Item = {
   }
   
   export const COMUNICATION: Item = {
+    id: 6,
+    name: 'Comunicaciones',
     description: [
       'Plan de Datos',
       'Plan de Voz',
@@ -350,8 +371,10 @@ export const PERSONAL: Item = {
       'Global'
     ]
   }
-  
+
   export const LOCATION: Item = {
+    id: 7,
+    name: 'Locaciones',
     description: [
       'Auditorio',
       'Aula de cómputo',
@@ -369,6 +392,8 @@ export const PERSONAL: Item = {
   }
   
   export const SOFTWARE: Item = {
+    id: 8,
+    name: 'Software',
     description: [
       'Licencia Wiz IQ',
       'Licencia Adobe',
@@ -391,6 +416,8 @@ export const PERSONAL: Item = {
   }
   
   export const OTHER: Item = {
+    id: 9,
+    name: 'Otros',
     description: [
       'Normas',
       'Permisos',
