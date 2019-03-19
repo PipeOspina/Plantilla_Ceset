@@ -26,7 +26,7 @@ export interface Expenditure {
     time?: number;
     dedication?: number;
     unityValue: number;
-    total: number;
+    total?: number;
     totalWithoutFP?: number;
     fp?: number;
     unityWithFP?: number;

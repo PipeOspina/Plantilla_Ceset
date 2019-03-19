@@ -46,6 +46,27 @@ export class BudgetComponent implements OnInit {
   contrEngDataSource = new MatTableDataSource(this.engContributions);
 
   constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService) {
+    if(this.activityService.activity) {
+      if(this.activityService.activity.budget) {
+        const budget = this.activityService.activity.budget;
+        for(let i = 0; i < budget.items.length; i++){
+          this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
+          this.subTotal += this.budgetData[i].value;
+        }
+
+        this.unexpect = Math.round(this.subTotal * 0.03);
+        this.total = this.subTotal + this.unexpect;
+
+        this.udeaContributions[0].value = Math.round((this.subTotal - this.budgetData[0].value) * 0.1);
+        this.udeaContributions[1].value = Math.round(this.total * 0.06);
+
+        this.engContributions[0].value = Math.round(this.total * 0.14);
+
+        budget.subTotal = this.subTotal;
+        budget.total = this.total;
+        budget.unexpected = this.unexpect;
+      } 
+    }
   }
 
   parseValue(value: number) {
@@ -154,22 +175,24 @@ export class BudgetComponent implements OnInit {
     } else if(this.activityService.activity) {
       if(this.activityService.activity.budget) {
         const budget = this.activityService.activity.budget;
-        for(let i = 0; i < budget.items.length; i++){
-          this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
-          this.subTotal += this.budgetData[i].value;
-        }
-
-        this.unexpect = Math.round(this.subTotal * 0.03);
-        this.total = this.subTotal + this.unexpect;
-
-        this.udeaContributions[0].value = Math.round((this.subTotal - this.budgetData[0].value) * 0.1);
-        this.udeaContributions[1].value = Math.round(this.total * 0.06);
-
-        this.engContributions[0].value = Math.round(this.total * 0.14);
-
-        budget.subTotal = this.subTotal;
-        budget.total = this.total;
-        budget.unexpected = this.unexpect;
+        setTimeout(() => {
+          for(let i = 0; i < budget.items.length; i++){
+            this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
+            this.subTotal += this.budgetData[i].value;
+          }
+  
+          this.unexpect = Math.round(this.subTotal * 0.03);
+          this.total = this.subTotal + this.unexpect;
+  
+          this.udeaContributions[0].value = Math.round((this.subTotal - this.budgetData[0].value) * 0.1);
+          this.udeaContributions[1].value = Math.round(this.total * 0.06);
+  
+          this.engContributions[0].value = Math.round(this.total * 0.14);
+  
+          budget.subTotal = this.subTotal;
+          budget.total = this.total;
+          budget.unexpected = this.unexpect;
+        }, 50);
       }
     }
   }

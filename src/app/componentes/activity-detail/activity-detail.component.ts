@@ -6,7 +6,9 @@ import { ActivityService } from '../../servicios/activity.service';
 import * as XLSX from 'xlsx';
 import { User } from '../../modelos/user';
 import { parseValue } from '../budget/budget.component';
-import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER, Budget } from '../../modelos/budget';
+import { PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER, Budget, ITEMS, Expenditure } from '../../modelos/budget';
+import { MatDialog } from '@angular/material';
+import { DialogConfirmComponent, OK_DIALOG } from '../dialog-confirm/dialog-confirm.component';
 
 @Component({
   selector: 'app-activity-detail',
@@ -126,7 +128,7 @@ export class ActivityDetailComponent implements OnInit {
     this.router.navigate['inicio/cohortes/crear'];
   }**/
 
-  constructor(private router: Router, private route: ActivatedRoute, private activityService: ActivityService) { }
+  constructor(private router: Router, private route: ActivatedRoute, private activityService: ActivityService, public dialog: MatDialog) { }
 
   ngOnInit() {
     let activity: AcademicActivity = this.activityService.activity;
@@ -163,6 +165,9 @@ export class ActivityDetailComponent implements OnInit {
     const target: DataTransfer = <DataTransfer>(evt.target);
     const data = [];
 
+    let msg = '';
+    let title;
+
     for(let i = 0; i < target.files.length; i++) {
       const reader: FileReader = new FileReader();
       reader.onload = (e: any) => {
@@ -176,28 +181,45 @@ export class ActivityDetailComponent implements OnInit {
 
         /* save data */
         data.push(XLSX.utils.sheet_to_json(ws, {header: 1}));
-        this.setFormData(data, i);
+        const ret = this.setFormData(data, i);
+        if(ret.canImport) {
+          msg += ret.msg + '<br>';
+          if(ret.name) {
+            title = ret.name;
+          }
+        }
         this.data = data;
       };
       reader.readAsBinaryString(target.files[i]);
     }
+    setTimeout(() => {
+      if(!title) {
+        title = 'Importar Documentos'
+      }
+
+      this.dialog.open(DialogConfirmComponent, {
+        data: {
+          message: msg,
+          title: title,
+          type: OK_DIALOG
+        }
+      });
+    }, 1000);
   }
 
-  setFormData(data: Array<Array<Array<any>>>, i: number) {
+  setFormData(data: Array<Array<Array<any>>>, i: number): {msg:string, canImport: boolean, name?: any} {
     if(data[i][0][1]) {
       if(data[i][0][1].toString() == TEACHER_INFO_FORMAT) {
         console.log(data[i][0][1]);
         return;
       } else if(data[i][0][1] == START_FORMAT) {
-        this.setStartFormat(data[i]);
-        return;
+        return this.setStartFormat(data[i]);
       }
     }
 
     if(data[i][0][3]) {
       if(data[i][0][3].toString() == BUDGET_FORMAT) {
-        this.setBudgetFormat(data[i]);
-        return;
+        return this.setBudgetFormat(data[i]);
       }
     }
 
@@ -208,45 +230,212 @@ export class ActivityDetailComponent implements OnInit {
       }
     }
 
-    console.log('No se reconoce el formato que quieres importar :(');
+    return {msg: '<h2>No se reconoce el Formato que deseas Importar :(</h2>', canImport: false}
   }
 
-  setBudgetFormat(data: Array<Array<any>>) {
-    console.log(data);
-    PERSONAL.expenditures = null;
-    MATERIAL.expenditures = null;
-    EQUIP.expenditures = null;
-    TRANSPORT.expenditures = null;
-    GASTRONOMY.expenditures = null;
-    COMERCIAL.expenditures = null;
-    COMUNICATION.expenditures = null;
-    LOCATION.expenditures = null;
-    SOFTWARE.expenditures = null;
-    OTHER.expenditures = null;
+  setBudgetFormat(data: Array<Array<any>>): {msg: string, canImport: boolean} {
+    PERSONAL.expenditures = [];
+    MATERIAL.expenditures = [];
+    EQUIP.expenditures = [];
+    TRANSPORT.expenditures = [];
+    GASTRONOMY.expenditures = [];
+    COMERCIAL.expenditures = [];
+    COMUNICATION.expenditures = [];
+    LOCATION.expenditures = [];
+    SOFTWARE.expenditures = [];
+    OTHER.expenditures = [];
 
     const items = [
       PERSONAL, MATERIAL, EQUIP, TRANSPORT, GASTRONOMY, COMERCIAL, COMUNICATION, LOCATION, SOFTWARE, OTHER
     ]
+
+    const today = new Date();
+    today.setHours(0);
+    today.setMinutes(0);
+    today.setSeconds(0);
+    today.setMilliseconds(0);
+
+    if(!this.activityService.activity) {
+      const activity: AcademicActivity = {
+        id: (this.activityService.activities.length + 1),
+        name: this.generalForm.controls['name'].value,
+        coordinatorEmail: this.generalForm.controls['email'].value,
+        coordinatorName: this.generalForm.controls['coordinator'].value,
+        coordinatorPhone: this.generalForm.controls['phone'].value,
+        creationDate: today,
+        dependency: this.generalForm.controls['dependency'].value,
+        duration: this.generalForm.controls['duration'].value,
+        state: 'created',
+        type: this.generalForm.controls['type'].value,
+        investigationGroup: this.generalForm.controls['resGroup'].value
+      };
+      this.activityService.activity = activity;
+    } else {
+      this.activityService.activity = {
+        id: (this.activityService.activities.length + 1),
+        name: this.generalForm.controls['name'].value,
+        coordinatorEmail: this.generalForm.controls['email'].value,
+        coordinatorName: this.generalForm.controls['coordinator'].value,
+        coordinatorPhone: this.generalForm.controls['phone'].value,
+        creationDate: today,
+        dependency: this.generalForm.controls['dependency'].value,
+        duration: this.generalForm.controls['duration'].value,
+        state: 'created',
+        type: this.generalForm.controls['type'].value,
+        investigationGroup: this.generalForm.controls['resGroup'].value,
+        budget: this.activityService.activity.budget
+      }
+    }
 
     this.activityService.activity.budget = {
       id: this.activityService.activity.id,
       items: items
     }
 
-    const budget: Budget = this.activityService.activity.budget;
-    const ii = 19;
-    const jj = 5;
-    budget.items.forEach(item => {
-      for(let i = 0; i < 10; i++) {
-        for(let j = 0; j < 19; j++){
-          
+    this.currentActivity = this.activityService.activity;
+    
+    let ii = 19;
+    let sumas = 0;
+    for(let i = 0; i < 10; i++) {
+      for(let j = 0; j < 19; j++){
+        if((i == 1 && j == 0) || (i == 3 && j == 0) || (i == 9 && j == 0)) {
+          sumas += 5;
+        } else if(j == 0 && i != 0) {
+          sumas += 6;
+        }
 
+        ii = ((19 * (i + 1)) + j + sumas);
+
+        if(data[ii][2] && data[ii][3] && data[ii][4] && data[ii][7]) {
+          console.log(data[ii]);
+          const isFP = data[ii][9] ? true : false;
+          const isTime = data[ii][5] ? true : false;
+          const isDedication = data[ii][6] ? true : false;
+          let unityWithFP = 0;
+          let totalWithFP = 0;
+          let totalWithoutFP = 0;
+          let total = 0;
+
+          if(isDedication) {
+            if(isTime) {
+              totalWithoutFP = data[ii][3] * data[ii][5] * data[ii][6] * data[ii][7];
+              if(isFP) {
+                unityWithFP = data[ii][7] * data[ii][9];
+                totalWithFP = data[ii][3] * unityWithFP * data[ii][5] * data[ii][6];
+                total = totalWithFP;
+              } else {
+                total = totalWithoutFP;
+              }
+            } else {
+              totalWithoutFP = data[ii][3] * data[ii][6] * data[ii][7]
+              if(isFP) {
+                unityWithFP = data[ii][7] * data[ii][9];
+                totalWithFP = data[ii][3] * unityWithFP * data[ii][6];
+                total = totalWithFP;
+              } else {
+                total = totalWithoutFP;
+              }
+            }
+          } else if(isTime) {
+            totalWithoutFP = data[ii][3] * data[ii][5] * data[ii][7];
+            if(isFP) {
+              unityWithFP = data[ii][7] * data[ii][9];
+              totalWithFP = data[ii][3] * unityWithFP * data[ii][5];
+              total = totalWithFP;
+            } else {
+              total = totalWithoutFP;
+            }
+          } else {
+            totalWithoutFP = data[ii][3] * data[ii][7];
+            if(isFP) {
+              unityWithFP = data[ii][7] * data[ii][9];
+              totalWithFP = data[ii][3] * unityWithFP;
+              total = totalWithFP;
+            } else {
+              total = totalWithoutFP;
+            }
+          }
+
+          const currentExp: Expenditure = {
+            description: data[ii][2],
+            quantity: data[ii][3],
+            unity: data[ii][4],
+            unityValue: data[ii][7],
+            comment: data[ii][12] ? data[ii][12] : '',
+            contrated: false,
+            id: data[ii][1],
+            approved: true,
+            created: false,
+            dedication: data[ii][6] ? data[ii][6] : 0,
+            eliminated: false,
+            fp: data[ii][9] ? data[ii][9] : 0,
+            logisticComment: '',
+            time: data[ii][5] ? data[ii][5] : 0,
+            realCost: 0,
+            total: total,
+            totalWithFP: totalWithFP,
+            totalWithoutFP: totalWithoutFP,
+            unityWithFP: unityWithFP,
+            first: {
+              description: data[ii][2],
+              quantity: data[ii][3],
+              unity: data[ii][4],
+              unityValue: data[ii][7],
+              comment: data[ii][12] ? data[ii][12] : '',
+              contrated: false,
+              id: data[ii][1],
+              approved: true,
+              created: false,
+              dedication: data[ii][6] ? data[ii][6] : 0,
+              eliminated: false,
+              fp: data[ii][9] ? data[ii][9] : 0,
+              logisticComment: '',
+              time: data[ii][5] ? data[ii][5] : 0,
+              realCost: 0,
+              total: total,
+              totalWithFP: totalWithFP,
+              totalWithoutFP: totalWithoutFP,
+              unityWithFP: unityWithFP,
+              first: null
+            }
+          }
+          if(this.currentActivity.budget.items[i].expenditures) {
+            this.currentActivity.budget.items[i].expenditures.push(currentExp);
+          } else {
+            this.currentActivity.budget.items[i].expenditures = [currentExp];
+          }
+        }
+      }
+    }
+
+    let msg: string = '';
+    let count = 0;
+    this.currentActivity.budget.items.forEach(item => {
+      if(item.expenditures) {
+        if(item.expenditures.length == 0) {
+          count++;
         }
       }
     });
+
+    if(count != 0) {
+      msg = `<h3>Se ha importado el presupuesto con:</h3>`
+      this.currentActivity.budget.items.forEach(item => {
+        if(item.expenditures.length > 0) {
+          let cost = 0;
+          item.expenditures.forEach(expenditure => {
+            cost += expenditure.total;
+          });
+          msg += `- <b>${item.name}</b> por valor de <b>$ ${parseValue(cost)}</b><br>`
+        }
+      });
+      return {msg: msg, canImport: true};
+    } else {
+      return {msg: 'No se ha detectado ningun rubro o gasto en el presupuesto', canImport: false}
+    }
   }
 
-  setStartFormat(data: Array<Array<any>>) {
+  setStartFormat(data: Array<Array<any>>): {msg:string, canImport: boolean, name?: any} {
     const controls: { [key: string]: AbstractControl } = this.generalForm.controls;
     const name = data[12][1] ? data[12][1].toString() : '';
     const type = this.getTypeOfActivity(data);
@@ -294,6 +483,12 @@ export class ActivityDetailComponent implements OnInit {
     controlsCohort['endDate'].setValue(finishDateCohort);
     controlsCohort['reuneCode'].setValue(REUNE);
     controlsCohort['sigepCode'].setValue(SIGEP);
+    
+    if(data[12][1]) {
+      return {msg: `<h3>Se han importado los datos de <b>"${name}"</b><h3>`, canImport: true, name: name};
+    } else {
+      return {msg: '<h3>Se han importado los datos de la actividad<h3>', canImport: true};
+    }
   }
 
   getTypeOfActivity(data: Array<Array<any>>): string {

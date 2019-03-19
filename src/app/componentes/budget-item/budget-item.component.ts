@@ -23,6 +23,8 @@ export class BudgetItemComponent implements OnInit {
   displayedColumns = ['name', 'quant', 'value', 'cost'];
   editedItems = [];
 
+  currentPage = 11;
+
   //changes: { id: number, page: number, first: Expenditure }[] = [];
 
   sub: any;
@@ -55,66 +57,69 @@ export class BudgetItemComponent implements OnInit {
 
   showDataForm() {
     let page: string;
-    switch (this.itemControl.value) {
-      case 0:
-        page = 'personal';
-        break;
-      case 1:
-        page = 'materiales';
-        break;
-      case 2:
-        page = 'equipos';
-        break;
-      case 3:
-        page = 'transporte';
-        break;
-      case 4:
-        page = 'gastronomia';
-        break;
-      case 5:
-        page = 'comercial';
-        break;
-      case 6:
-        page = 'comunicaciones';
-        break;
-      case 7:
-        page = 'locaciones';
-        break;
-      case 8:
-        page = 'software';
-        break;
-      case 9:
-        page = 'otros';
-        break;
-      default:
-        page = 'otros';
-        break;
-    };
-    setTimeout(() => {
-      if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
-        if(page !== this.params['budgetItem']) {
-          this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
-          this.isOtherSelected = true;
-        }
-      } else {
-        if(page !== this.params['budgetItem']) {
-          this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
-          this.isOtherSelected = true;
-          if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
-            this.setExpenditures();
-            this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
-            setTimeout(() => {
-              this.somethinThere = true;
-            }, 100);
-          } else {
-            this.budgetItemDataSource = new MatTableDataSource(null);
-            setTimeout(() => {
-              this.somethinThere = false;
-            }, 100);
+    if(this.currentPage != this.itemControl.value) {
+      setTimeout(() => {
+        this.currentPage = this.itemControl.value;
+        switch (this.itemControl.value) {
+          case 0:
+            page = 'personal';
+            break;
+          case 1:
+            page = 'materiales';
+            break;
+          case 2:
+            page = 'equipos';
+            break;
+          case 3:
+            page = 'transporte';
+            break;
+          case 4:
+            page = 'gastronomia';
+            break;
+          case 5:
+            page = 'comercial';
+            break;
+          case 6:
+            page = 'comunicaciones';
+            break;
+          case 7:
+            page = 'locaciones';
+            break;
+          case 8:
+            page = 'software';
+            break;
+          case 9:
+            page = 'otros';
+            break;
+          default:
+            page = 'otros';
+            break;
+        };
+        if(this.router.url != `/inicio/portafolio/crear/presupuesto/${this.params['budgetItem']}`) {
+          if(page !== this.params['budgetItem']) {
+            this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto/${page}`]);
+            this.isOtherSelected = true;
+          }
+        } else {
+          if(page !== this.params['budgetItem']) {
+            this.router.navigate([`inicio/portafolio/crear/presupuesto/${page}`]);
+            this.isOtherSelected = true;
+            if(this.currentActivity.budget.items[this.itemControl.value].expenditures) {
+              this.setExpenditures();
+              this.budgetItemDataSource = new MatTableDataSource(this.budgetItemData);
+              setTimeout(() => {
+                this.somethinThere = true;
+              }, 10);
+            } else {
+              this.budgetItemDataSource = new MatTableDataSource(null);
+              setTimeout(() => {
+                this.somethinThere = false;
+              }, 10);
+            }
           }
         }
-      }
-    }, 50);
+      }, 50);
+    }
   }
 
   somethinThere;
