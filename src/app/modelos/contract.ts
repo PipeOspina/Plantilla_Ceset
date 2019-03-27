@@ -1,9 +1,9 @@
 export interface Contract {
     type: string;
     entity: string;
-    startDate: Date;
-    endDate: Date;
-    creationDate: Date;
+    startDate: Date | '';
+    endDate: Date | '';
+    creationDate: Date | '';
 }
 
 export function createNewContract(): Contract {

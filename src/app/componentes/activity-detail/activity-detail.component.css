@@ -29,7 +29,7 @@ input[type="file"] {
   margin: 25px auto;
 }
 
-.buttons > * {
+.buttons > *:not(.no) {
   width: 49%;
   margin-left: 0.2%
 }

@@ -7,6 +7,13 @@ export interface Budget {
     contributions?: Contribution[];
     financialAnalysis?: FinancialAnalysis;
     discounts?: Discounts;
+    cofinancing?: Cofinancing;
+}
+
+export interface Cofinancing {
+  entity: string;
+  concept: string;
+  value: number;
 }
 
 export interface Item {

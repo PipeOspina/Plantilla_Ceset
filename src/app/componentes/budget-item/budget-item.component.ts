@@ -359,8 +359,13 @@ export class BudgetItemComponent implements OnInit {
       }
     });
     
-    this.activityService.activity = this.currentActivity;
-    this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+    if(this.router.url.includes('crear')) {
+      this.activityService.activity = this.currentActivity;
+      this.router.navigate(['inicio/portafolio/crear/presupuesto']);
+    } else {
+      this.activityService.activities[this.params['code'] - 1] = this.currentActivity;
+      this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto`]);
+    }
   }
 
   ngOnDestroy() {

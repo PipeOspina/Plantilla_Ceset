@@ -177,7 +177,7 @@
     <button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="primary" (click)="createActivity()" [disabled]="">Crear</button>
   </div>
   <div class="buttons" *ngIf="!this.createView">
-    <button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="warn" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Eliminar</button>
-    <button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="primary" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Guardar</button>
+    <!--<button class="button" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="warn" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Eliminar</button>-->
+    <button class="button no" mat-raised-button [title]="anyError() ? 'Diligencia correctamente todos los campos' : ''" color="primary" type="submit" (click)="submited = true; submit()" [disabled]="anyError() || submited">Guardar</button>
   </div>
 </mat-card>

@@ -22,6 +22,14 @@ export interface AcademicActivity {
     roles?: Role[];
     budget?: Budget;
     themes?: Theme[];
+    activityCohort?: ActivityCohort;
+}
+
+export interface ActivityCohort {
+  startDate: Date | '';
+  endDate: Date | '';
+  reune: number;
+  sigep: number;
 }
 
 export function createNewActivity(id: number, name?: string): AcademicActivity {

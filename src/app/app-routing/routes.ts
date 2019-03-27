@@ -68,8 +68,8 @@ export const routes: Routes = [
       component: BudgetItemComponent
     },
     {
-      path: 'cohortes',
-      component: ActivityListComponent
+      path: 'cohortes'
+      //component: ActivityListComponent
     },
     {
       path: 'cohortes/crear',

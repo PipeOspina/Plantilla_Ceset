@@ -46,6 +46,7 @@ export class BudgetComponent implements OnInit {
   contrEngDataSource = new MatTableDataSource(this.engContributions);
 
   constructor(private router: Router, private route: ActivatedRoute, public dialog: MatDialog, private activityService: ActivityService) {
+    /*
     if(this.activityService.activity) {
       if(this.activityService.activity.budget) {
         const budget = this.activityService.activity.budget;
@@ -67,6 +68,7 @@ export class BudgetComponent implements OnInit {
         budget.unexpected = this.unexpect;
       } 
     }
+    */
   }
 
   parseValue(value: number) {
@@ -176,8 +178,15 @@ export class BudgetComponent implements OnInit {
       if(this.activityService.activity.budget) {
         const budget = this.activityService.activity.budget;
         setTimeout(() => {
+          budget.items.forEach(item => {
+            item.total = 0;
+            item.expenditures.forEach(expenditure => {
+              item.total += expenditure.total;
+            });
+          });
+          
           for(let i = 0; i < budget.items.length; i++){
-            this.budgetData[i].value = budget.items[i].total != null ? budget.items[i].total : 0;
+            this.budgetData[i].value = budget.items[i].total;
             this.subTotal += this.budgetData[i].value;
           }
   
@@ -192,6 +201,7 @@ export class BudgetComponent implements OnInit {
           budget.subTotal = this.subTotal;
           budget.total = this.total;
           budget.unexpected = this.unexpect;
+          console.log(budget);
         }, 50);
       }
     }

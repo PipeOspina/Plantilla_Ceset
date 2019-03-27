@@ -112,7 +112,11 @@ export class ActivityDetailComponent implements OnInit {
         budget: this.activityService.activity.budget
       }
     }
-    this.router.navigate([`inicio/portafolio/crear/presupuesto`]);
+
+    if(this.createView)
+      this.router.navigate([`inicio/portafolio/crear/presupuesto`]);
+    else
+      this.router.navigate([`inicio/portafolio/editar/${this.params['code']}/presupuesto`]);
   }
 
   anyError() {
@@ -137,8 +141,9 @@ export class ActivityDetailComponent implements OnInit {
 
     this.createView = this.router.url.includes('crear');
 
-    if(!activity && !this.createView)
+    if(!activity && !this.createView) {
       activity = this.activityService.activities[parseInt(this.params['code']) - 1];
+    }
 
     if(activity) {
       let form: FormGroup = this.generalForm;
@@ -151,10 +156,16 @@ export class ActivityDetailComponent implements OnInit {
       form.controls['email'].setValue(activity.coordinatorEmail);
       form.controls['duration'].setValue(activity.duration);
       if(activity.budget) {
-        const budgetForm: FormGroup = this.budgetForm;
-        budgetForm.controls['value'].setValue(`$ ${parseValue(activity.budget.total)}`);
+        if(activity.budget.total && !this.createView) {
+          const budgetForm: FormGroup = this.budgetForm;
+          budgetForm.controls['value'].setValue(`$ ${parseValue(activity.budget.total)}`);
+        }
       }
     }
+  }
+
+  submit() {
+    this.router.navigate(['inicio/portafolio']);
   }
 
   data: any[] = [];
@@ -192,6 +203,7 @@ export class ActivityDetailComponent implements OnInit {
       };
       reader.readAsBinaryString(target.files[i]);
     }
+
     setTimeout(() => {
       if(!title) {
         title = 'Importar Documentos'
@@ -229,7 +241,6 @@ export class ActivityDetailComponent implements OnInit {
         return;
       }
     }
-
     return {msg: '<h2>No se reconoce el Formato que deseas Importar :(</h2>', canImport: false}
   }
 
@@ -419,16 +430,19 @@ export class ActivityDetailComponent implements OnInit {
     });
 
     if(count != 0) {
+      let total = 0;
       msg = `<h3>Se ha importado el presupuesto con:</h3>`
       this.currentActivity.budget.items.forEach(item => {
         if(item.expenditures.length > 0) {
           let cost = 0;
           item.expenditures.forEach(expenditure => {
             cost += expenditure.total;
+            total += expenditure.total;
           });
           msg += `- <b>${item.name}</b> por valor de <b>$ ${parseValue(cost)}</b><br>`
         }
       });
+      this.budgetForm.controls['value'].setValue(`$ ${parseValue(total  + Math.round(total * 0.03))}`);
       return {msg: msg, canImport: true};
     } else {
       return {msg: 'No se ha detectado ningun rubro o gasto en el presupuesto', canImport: false}
@@ -464,8 +478,8 @@ export class ActivityDetailComponent implements OnInit {
     controlsContract['startDate'].setValue(startDateContract);
     controlsContract['endDate'].setValue(finishDateContract);
 
+    const controlsCofinance: { [key: string]: AbstractControl } = this.cofinancingForm.controls;
     if(data[34][1]) {
-      const controlsCofinance: { [key: string]: AbstractControl } = this.cofinancingForm.controls;
       const entityCofinance = data[34][4] ? data[34][4] : '';
       const concept = data[34][6] ? data[34][6] : '';
       const value = data[34][8] ? data[34][8] : '';
@@ -483,7 +497,32 @@ export class ActivityDetailComponent implements OnInit {
     controlsCohort['endDate'].setValue(finishDateCohort);
     controlsCohort['reuneCode'].setValue(REUNE);
     controlsCohort['sigepCode'].setValue(SIGEP);
-    
+
+    if(this.currentActivity) {
+      this.currentActivity.contract = {
+        creationDate: new Date(),
+        endDate: finishDateContract,
+        entity: entity,
+        startDate: startDateContract,
+        type: typeContract
+      }
+
+      if(this.currentActivity.budget) {
+        this.currentActivity.budget.cofinancing = {
+          concept: controlsCofinance['concept'].value,
+          entity: controlsCofinance['entity'].value,
+          value: parseFloat(controlsCofinance['value'].value != '' ? controlsCofinance['value'].value : 0)
+        }
+      }
+
+      this.currentActivity.activityCohort = {
+        endDate: finishDateCohort,
+        reune: REUNE,
+        sigep: SIGEP,
+        startDate: startDateCohort
+      }
+    }
+
     if(data[12][1]) {
       return {msg: `<h3>Se han importado los datos de <b>"${name}"</b><h3>`, canImport: true, name: name};
     } else {
